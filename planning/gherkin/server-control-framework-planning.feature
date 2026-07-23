@@ -1,0 +1,24 @@
+server-control-framework-planning.feature
+
+Feature: Server Control Framework Planning Overview
+  As a platform engineering team
+  We want an overview of phase-specific Gherkin plans
+  So that discovery and implementation are managed incrementally per phase
+
+  Background:
+    Given all phase plans are split into dedicated feature files
+    And each phase starts with discovery before implementation work
+
+  # Phase Plan Files
+  # - planning/gherkin/phases/phase-1-foundation-and-defence.feature
+  # - planning/gherkin/phases/phase-2-firewall-and-proxy.feature
+  # - planning/gherkin/phases/phase-3-application-management.feature
+  # - planning/gherkin/phases/phase-4-resource-management.feature
+  # - planning/gherkin/phases/phase-5-monitoring-and-access-control.feature
+  # - planning/gherkin/phases/cross-cutting-quality-gates.feature
+
+  Scenario: Confirm phase planning files are organized
+    Given the phase feature files exist in planning/gherkin/phases
+    When the team prepares sprint planning
+    Then each phase should be planned from its dedicated file
+    And cross-cutting quality gates should apply to all phases

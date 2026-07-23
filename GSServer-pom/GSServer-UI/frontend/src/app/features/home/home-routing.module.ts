@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home.component';
 import { HardeningComponent } from './hardening.component';
 import { ProxyComponent } from './proxy.component';
+import { ProxyInstallationComponent } from './proxy-installation.component';
 
 const routes: Routes = [
   {
@@ -17,6 +18,10 @@ const routes: Routes = [
   {
     path: 'proxy',
     component: ProxyComponent
+  },
+  {
+    path: 'proxy/install',
+    component: ProxyInstallationComponent
   }
 ];
 

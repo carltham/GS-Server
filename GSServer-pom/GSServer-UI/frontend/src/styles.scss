@@ -185,6 +185,162 @@ html.theme-dark .eyebrow {
   place-items: center;
 }
 
+.floating-terminal {
+  position: fixed;
+  z-index: 1400;
+  width: 760px;
+  height: 420px;
+  border: 1px solid;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  resize: both;
+  min-width: 420px;
+  min-height: 260px;
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.25);
+}
+
+html.theme-light .floating-terminal {
+  background: #ffffff;
+  border-color: #cdd9e6;
+}
+
+html.theme-dark .floating-terminal {
+  background: #132131;
+  border-color: #2f425a;
+}
+
+.floating-terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: move;
+  user-select: none;
+  border-bottom: 1px solid;
+}
+
+.floating-terminal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+html.theme-light .floating-terminal-header {
+  border-bottom-color: #d5e0eb;
+  background: #edf4fb;
+}
+
+html.theme-dark .floating-terminal-header {
+  border-bottom-color: #2a3d55;
+  background: #1a2c40;
+}
+
+.floating-terminal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+.floating-terminal-required {
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 8px 10px;
+  max-height: 150px;
+  overflow: auto;
+  flex: 0 0 auto;
+}
+
+.floating-terminal-required pre {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.floating-terminal-command-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.floating-terminal-command-list button {
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+}
+
+html.theme-light .floating-terminal-required {
+  border-color: #d4e0ec;
+  background: #f7fbff;
+}
+
+html.theme-dark .floating-terminal-required {
+  border-color: #35506d;
+  background: #102034;
+}
+
+.floating-terminal-output {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 120px;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 10px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  resize: none;
+  box-sizing: border-box;
+}
+
+html.theme-light .floating-terminal-output {
+  border-color: #d4e0ec;
+  background: #f7fbff;
+  color: #102132;
+}
+
+html.theme-dark .floating-terminal-output {
+  border-color: #35506d;
+  background: #0f1b2a;
+  color: #e6eff8;
+}
+
+.floating-terminal-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  padding-top: 6px;
+}
+
+.floating-terminal-controls input {
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+html.theme-light .floating-terminal-controls input {
+  border-color: #c6d6e6;
+  background: #ffffff;
+  color: #13212f;
+}
+
+html.theme-dark .floating-terminal-controls input {
+  border-color: #3a5673;
+  background: #122235;
+  color: #e8f2fb;
+}
+
 .login-card {
   width: min(100%, 520px);
   border-radius: 20px;

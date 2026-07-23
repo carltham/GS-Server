@@ -1,0 +1,71 @@
+<section class="card stack-gap" style="margin-top: 16px;">
+  <h2>Proxy Installation Procedure</h2>
+  <p *ngIf="guide">Operating system detected: <strong>{{ guide.operatingSystem }}</strong></p>
+  <p *ngIf="guideError.length > 0">{{ guideError }}</p>
+
+  <ol *ngIf="guide && guide.operatingSystem === 'Linux'">
+    <li>
+      <a href="#" (click)="$event.preventDefault(); startNginxInstallation()">
+        Install NGINX using the guided terminal command sequence.
+      </a>
+    </li>
+    <li>Enable the service at boot and start it now.</li>
+    <li>Check service status and confirm the binary path.</li>
+    <li>Return to Proxy Management and re-run detection.</li>
+  </ol>
+
+  <ol *ngIf="guide && guide.operatingSystem !== 'Linux'">
+    <li *ngFor="let step of guide.steps">{{ step }}</li>
+  </ol>
+
+  <div class="action-row">
+    <button mat-flat-button color="primary" type="button" (click)="openTerminal()">
+      Open Floating Installation Terminal
+    </button>
+    <a mat-stroked-button color="primary" routerLink="/proxy">Back to Proxy Management</a>
+  </div>
+</section>
+
+<section
+  *ngIf="terminalVisible"
+  class="floating-terminal"
+  [style.left.px]="terminalLeft"
+  [style.top.px]="terminalTop">
+  <header class="floating-terminal-header" (mousedown)="onTerminalHeaderMouseDown($event)">
+    <strong>Proxy Install Terminal</strong>
+    <div class="floating-terminal-header-actions">
+      <button mat-button type="button" (click)="clearTerminalOutput()">Clear</button>
+      <button mat-button type="button" (click)="closeTerminal()">Close</button>
+    </div>
+  </header>
+
+  <div class="floating-terminal-body">
+    <div class="floating-terminal-required" *ngIf="guide && guide.commands.length > 0">
+      <strong>Required commands</strong>
+      <div class="floating-terminal-command-list">
+        <button
+          mat-stroked-button
+          type="button"
+          *ngFor="let command of guide.commands"
+          [disabled]="!isCommandSelectable(command)"
+          (click)="useCommand(command)">
+          {{ command }} ({{ commandStateLabel(command) }})
+        </button>
+      </div>
+    </div>
+
+    <textarea class="floating-terminal-output" [value]="terminalOutput" readonly></textarea>
+
+    <div class="floating-terminal-controls">
+      <input
+        matInput
+        type="text"
+        placeholder="Type command"
+        [(ngModel)]="terminalCommand"
+        (keydown.enter)="runCurrentCommand()" />
+      <button mat-flat-button color="primary" type="button" [disabled]="terminalBusy" (click)="runCurrentCommand()">
+        {{ terminalBusy ? 'Running...' : 'Run' }}
+      </button>
+    </div>
+  </div>
+</section>

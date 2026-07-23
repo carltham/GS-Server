@@ -1,5 +1,64 @@
-<section class="card" style="margin-top: 16px;">
-  <h2>Proxy</h2>
-  <p>Proxy control page is ready for the next implementation slice.</p>
-  <p role="status" aria-live="polite">Current scope: NGINX HTTPS proxy controller contract and execution flow.</p>
+<section class="card stack-gap" style="margin-top: 16px;">
+  <h2>Proxy Management</h2>
+  <ng-container *ngIf="noServerDetected; else proxyReady">
+    <p role="status" aria-live="polite">No NGINX or Apache server is currently running on this system.</p>
+    <a mat-flat-button color="primary" routerLink="/proxy/install">Start Proxy Installation Procedure</a>
+  </ng-container>
+
+  <ng-template #proxyReady>
+    <p>Apply NGINX gateway proxy settings through backend policy boundaries.</p>
+    <p aria-live="polite">{{ runtimeMessage }}</p>
+
+    <div class="stack-gap">
+      <h3>Server Runtime State</h3>
+      <p>Detected server: <strong>{{ runtimeStatus?.detectedServer || 'unknown' }}</strong></p>
+      <p>NGINX running: <strong>{{ runtimeStatus?.nginxRunning ? 'yes' : 'no' }}</strong></p>
+      <p>Apache running: <strong>{{ runtimeStatus?.apacheRunning ? 'yes' : 'no' }}</strong></p>
+    </div>
+
+    <div class="stack-gap">
+      <h3>Latest Proxy Configuration</h3>
+      <p>{{ latestStateMessage }}</p>
+      <ng-container *ngIf="latestState">
+        <p>Status: <strong>{{ latestState.status }}</strong></p>
+        <p>Enabled: <strong>{{ latestState.enabled ? 'yes' : 'no' }}</strong></p>
+        <p>Upstream: <strong>{{ latestState.upstreamHost }}:{{ latestState.upstreamPort }}</strong></p>
+        <p>TLS enabled: <strong>{{ latestState.tlsEnabled ? 'yes' : 'no' }}</strong></p>
+        <p>Requested by: <strong>{{ latestState.requestedBy }}</strong></p>
+        <p>Occurred at: <strong>{{ latestState.occurredAtUtc }}</strong></p>
+      </ng-container>
+    </div>
+
+    <form class="stack-gap" (ngSubmit)="apply()">
+      <mat-slide-toggle [(ngModel)]="enabled" name="enabled" aria-label="Enabled">
+        Enabled
+      </mat-slide-toggle>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Upstream Host</mat-label>
+        <input matInput [(ngModel)]="upstreamHost" name="upstreamHost" aria-label="Upstream Host" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Upstream Port</mat-label>
+        <input
+          matInput
+          type="number"
+          [(ngModel)]="upstreamPort"
+          name="upstreamPort"
+          aria-label="Upstream Port"
+        />
+      </mat-form-field>
+
+      <mat-slide-toggle [(ngModel)]="tlsEnabled" name="tlsEnabled" aria-label="TLS Enabled">
+        TLS Enabled
+      </mat-slide-toggle>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Applying...' : 'Apply Proxy Config' }}
+      </button>
+    </form>
+
+    <p role="status" aria-live="polite">{{ statusMessage }}</p>
+  </ng-template>
 </section>

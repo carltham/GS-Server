@@ -46,4 +46,23 @@ class WindowsHardeningAdapterTest {
     assertThat(report.timedOut()).isTrue();
     assertThat(report.successful()).isFalse();
   }
+
+  @Test
+  void rollbackBaselineHardeningUsesRollbackCommandPath() {
+    List<String> executedCommand = new ArrayList<>();
+
+    HardeningCommandExecutor executor =
+        (command, timeout) -> {
+          executedCommand.addAll(command);
+          return new CommandExecutionResult(0, "rolled back", "", false);
+        };
+
+    WindowsHardeningAdapter adapter = new WindowsHardeningAdapter(executor);
+    HardeningExecutionReport report = adapter.rollbackBaselineHardening();
+
+    assertThat(executedCommand).contains("powershell");
+    assertThat(executedCommand.get(executedCommand.size() - 1)).contains("rollback");
+    assertThat(report.stdout()).isEqualTo("rolled back");
+    assertThat(report.successful()).isTrue();
+  }
 }

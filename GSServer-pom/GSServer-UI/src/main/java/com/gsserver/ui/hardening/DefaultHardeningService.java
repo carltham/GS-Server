@@ -26,8 +26,16 @@ public class DefaultHardeningService implements HardeningService {
     validateRequest(request);
     HardeningExecutionReport report = executeByProfile(request.profile());
     if (!report.successful()) {
+      HardeningExecutionReport rollbackReport = rollbackByProfile(request.profile());
+      String rollbackMessage = rollbackReport.successful() ? "rollback succeeded" : "rollback failed";
       throw new HardeningExecutionException(
-          "Hardening execution failed on " + report.platform() + ": " + report.stderr());
+          "Hardening execution failed on "
+              + report.platform()
+              + ": "
+              + report.stderr()
+              + " ("
+              + rollbackMessage
+              + ")");
     }
     return new HardeningResponse("accepted", "Hardening request accepted");
   }
@@ -37,6 +45,13 @@ public class DefaultHardeningService implements HardeningService {
       return windowsHardeningAdapter.applyBaselineHardening();
     }
     return linuxHardeningAdapter.applyBaselineHardening();
+  }
+
+  private HardeningExecutionReport rollbackByProfile(String profile) {
+    if ("strict".equals(profile)) {
+      return windowsHardeningAdapter.rollbackBaselineHardening();
+    }
+    return linuxHardeningAdapter.rollbackBaselineHardening();
   }
 
   private void validateRequest(HardeningRequest request) {

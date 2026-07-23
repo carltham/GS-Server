@@ -2,6 +2,11 @@ architecture-implementation-roadmap.md
 
 # Implementation Roadmap - From Today to Tomorrow
 
+## Progress Source
+- Canonical progress tracking lives in planning/gherkin/server-control-framework-planning.feature.
+- This roadmap uses milestone wording only and should not maintain separate progress bars.
+- Update the canonical overview first whenever a phase changes.
+
 ## Overview
 Iterative, phased approach using scrum-like sprints to transform from current state to complete server control architecture.
 
@@ -14,6 +19,8 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - Implement system hardening
 - Design controller/executor pattern
 - Create adapters for primary platforms
+- Current status: In Progress
+- Completion: 80%
 
 ### Scrum Sprints
 
@@ -66,23 +73,41 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - Implement nginx HTTPS proxy control as the first managed gateway capability
 - Validate TLS routing, policy checks, and rollback behavior
 - Build operational runbook and CLI trigger for gateway proxy actions
+- Current status: Discovery in progress
+- Completion: 25%
 
 ### Scrum Sprints
 
-#### Sprint 2.1: Gateway Proxy Controller Contract
+#### Sprint 2.0: Discovery & Scope
 **Duration**: 1 week
-- [ ] Define gateway proxy controller API contract
-- [ ] Define service-layer validation and policy contract
-- [ ] Add controller orchestration tests
-- [ ] Add contract tests for structured success/error responses
+- [ ] Audit current gateway proxy and nginx HTTPS constraints
+- [ ] Capture operator, policy, rollback, and audit requirements
+- [ ] Define the Phase 2 execution boundary and success criteria
+- [ ] Record discovery findings and prepare controller contract inputs
+
+#### Sprint 2.1: Contract Definition
+**Duration**: 1 week
+- [ ] Define controller API shape and orchestration responsibilities
+- [ ] Define service-layer policy, validation, and rollback rules
+- [ ] Produce contract-first acceptance criteria for Phase 2
 
 **Deliverables**:
 - gateway-proxy-controller-contract.md
 - gateway-proxy-service-contract.md
+- gateway-proxy-acceptance-criteria.md
+
+#### Sprint 2.2: Gateway Proxy Controller Tests
+**Duration**: 1 week
+- [ ] Add controller orchestration tests
+- [ ] Add contract tests for structured success/error responses
+- [ ] Validate the contract against discovery findings
+- [ ] Order the contract tests before adapter work
+
+**Deliverables**:
 - gateway-proxy-controller-tests.md
 - gateway-proxy-api-contract-tests.md
 
-#### Sprint 2.2: NGINX HTTPS Proxy Control
+#### Sprint 2.3: NGINX HTTPS Proxy Control
 **Duration**: 1 week
 - [ ] Finalize pseudocode for nginx HTTPS proxy configuration
 - [ ] Implement nginx HTTPS configuration adapter
@@ -94,7 +119,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - nginx-adapter.sh
 - nginx-https-proxy-tests.md
 
-#### Sprint 2.3: Gateway Operations and Runbook
+#### Sprint 2.4: Gateway Operations and Runbook
 **Duration**: 1 week
 - [ ] Define gateway proxy operation schema and audit fields
 - [ ] Implement file-backed operation state for gateway proxy actions
@@ -115,6 +140,8 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - Deliver backend controller and service boundaries for firewall control
 - Implement multi-platform firewall adapters (Linux, Windows, cloud)
 - Validate policy parity, rollback behavior, and auditable execution results
+- Current status: Not Started
+- Completion: 0%
 
 ### Scrum Sprints
 
@@ -153,6 +180,8 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - Application orchestration
 - Dependency management
 - Health monitoring
+- Current status: Not Started
+- Completion: 0%
 
 ### Scrum Sprints
 
@@ -188,6 +217,8 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - CPU/memory/disk management
 - Resource monitoring
 - Quota enforcement
+- Current status: Not Started
+- Completion: 0%
 
 ### Scrum Sprints
 
@@ -223,6 +254,8 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - Complete observability
 - User/permission automation
 - Audit trails
+- Current status: Not Started
+- Completion: 0%
 
 ### Scrum Sprints
 
@@ -258,6 +291,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - Production readiness
 - Documentation
 - Performance optimization
+- Current status: Not Started
 - Additional platforms/adapters
 
 ### Ongoing

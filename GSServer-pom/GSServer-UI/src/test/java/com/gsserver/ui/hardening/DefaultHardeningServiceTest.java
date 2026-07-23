@@ -6,6 +6,8 @@ import com.gsserver.ui.hardening.adapter.WindowsHardeningAdapter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,7 @@ class DefaultHardeningServiceTest {
 
     assertThat(response.status()).isEqualTo("accepted");
     assertThat(response.message()).isEqualTo("Hardening request accepted");
+    verify(linuxAdapter, never()).rollbackBaselineHardening();
   }
 
   @Test
@@ -76,13 +79,17 @@ class DefaultHardeningServiceTest {
     WindowsHardeningAdapter windowsAdapter = mock(WindowsHardeningAdapter.class);
     when(linuxAdapter.applyBaselineHardening())
         .thenReturn(new HardeningExecutionReport("linux", 32, "", "permission denied", false));
+    when(linuxAdapter.rollbackBaselineHardening())
+      .thenReturn(new HardeningExecutionReport("linux", 0, "rolled back", "", false));
 
     DefaultHardeningService service = new DefaultHardeningService(linuxAdapter, windowsAdapter);
 
     assertThatThrownBy(
             () -> service.triggerHardening(new HardeningRequest("tenant-a", "ui-operator", "baseline")))
         .isInstanceOf(HardeningExecutionException.class)
-        .hasMessageContaining("Hardening execution failed on linux");
+      .hasMessageContaining("Hardening execution failed on linux")
+      .hasMessageContaining("rollback succeeded");
+    verify(linuxAdapter).rollbackBaselineHardening();
   }
 
   private DefaultHardeningService serviceWithSuccessfulAdapters() {

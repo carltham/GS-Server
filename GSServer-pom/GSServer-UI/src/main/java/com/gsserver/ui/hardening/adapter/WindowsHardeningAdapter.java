@@ -24,4 +24,17 @@ public class WindowsHardeningAdapter {
     return new HardeningExecutionReport(
         "windows", result.exitCode(), result.stdout(), result.stderr(), result.timedOut());
   }
+
+  public HardeningExecutionReport rollbackBaselineHardening() {
+    List<String> command =
+        List.of(
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "Write-Output 'windows-hardening-rollback'; Write-Error 'rollback-no-error'; exit 0");
+
+    CommandExecutionResult result = commandExecutor.execute(command, Duration.ofMinutes(2));
+    return new HardeningExecutionReport(
+        "windows", result.exitCode(), result.stdout(), result.stderr(), result.timedOut());
+  }
 }

@@ -47,4 +47,23 @@ class LinuxHardeningAdapterTest {
     assertThat(report.stderr()).isEqualTo("permission denied");
     assertThat(report.successful()).isFalse();
   }
+
+  @Test
+  void rollbackBaselineHardeningUsesRollbackCommandPath() {
+    List<String> executedCommand = new ArrayList<>();
+
+    HardeningCommandExecutor executor =
+        (command, timeout) -> {
+          executedCommand.addAll(command);
+          return new CommandExecutionResult(0, "rolled back", "", false);
+        };
+
+    LinuxHardeningAdapter adapter = new LinuxHardeningAdapter(executor);
+    HardeningExecutionReport report = adapter.rollbackBaselineHardening();
+
+    assertThat(executedCommand).contains("bash");
+    assertThat(executedCommand.get(executedCommand.size() - 1)).contains("rollback");
+    assertThat(report.stdout()).isEqualTo("rolled back");
+    assertThat(report.successful()).isTrue();
+  }
 }

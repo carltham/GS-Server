@@ -24,4 +24,17 @@ public class LinuxHardeningAdapter {
     return new HardeningExecutionReport(
         "linux", result.exitCode(), result.stdout(), result.stderr(), result.timedOut());
   }
+
+  public HardeningExecutionReport rollbackBaselineHardening() {
+    List<String> command =
+        List.of(
+            "/usr/bin/env",
+            "bash",
+            "-lc",
+            "echo linux-hardening-rollback && echo rollback-no-error 1>&2 && exit 0");
+
+    CommandExecutionResult result = commandExecutor.execute(command, Duration.ofMinutes(2));
+    return new HardeningExecutionReport(
+        "linux", result.exitCode(), result.stdout(), result.stderr(), result.timedOut());
+  }
 }

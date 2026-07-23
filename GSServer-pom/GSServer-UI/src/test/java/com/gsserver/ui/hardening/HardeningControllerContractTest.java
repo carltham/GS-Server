@@ -125,7 +125,7 @@ class HardeningControllerContractTest {
       @Test
       void triggerHardeningReturnsStructuredErrorOnExecutionFailure() throws Exception {
       when(hardeningService.triggerHardening(any(HardeningRequest.class)))
-        .thenThrow(new HardeningExecutionException("Hardening execution failed on linux: denied"));
+        .thenThrow(new HardeningExecutionException("Hardening execution failed on linux: denied (rollback succeeded)"));
 
       mockMvc
         .perform(
@@ -138,7 +138,26 @@ class HardeningControllerContractTest {
                 + "\"profile\":\"baseline\"}"))
         .andExpect(status().isInternalServerError())
         .andExpect(jsonPath("$.code").value("EXECUTION_FAILED"))
-        .andExpect(jsonPath("$.message").value("Hardening execution failed on linux: denied"));
+        .andExpect(jsonPath("$.message").value("Hardening execution failed on linux: denied (rollback succeeded)"));
+      }
+
+      @Test
+      void triggerHardeningReturnsStructuredErrorOnExecutionFailureWithRollbackFailure() throws Exception {
+      when(hardeningService.triggerHardening(any(HardeningRequest.class)))
+        .thenThrow(new HardeningExecutionException("Hardening execution failed on windows: denied (rollback failed)"));
+
+      mockMvc
+        .perform(
+          post("/api/v1/hardening")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+              "{"
+                + "\"tenantId\":\"tenant-a\","
+                + "\"requestedBy\":\"ui-admin\","
+                + "\"profile\":\"strict\"}"))
+        .andExpect(status().isInternalServerError())
+        .andExpect(jsonPath("$.code").value("EXECUTION_FAILED"))
+        .andExpect(jsonPath("$.message").value("Hardening execution failed on windows: denied (rollback failed)"));
       }
 
   @Test

@@ -21,3 +21,16 @@ Feature: Cross-cutting Quality Gates
     Then controllers should contain orchestration only
     And executors should contain implementation only
     And adapter behavior should remain platform-specific and replaceable
+
+  Scenario: Enforce dumb thin-client boundary
+    Given an Angular UI change is proposed
+    When the change is reviewed against architecture constraints
+    Then UI code should contain no domain or policy decision logic
+    And all authoritative validation and business rules should execute in backend layers
+
+  Scenario: Enforce iterative top-down TDD one boundary at a time
+    Given a capability increment is selected
+    When development starts
+    Then the first failing test should be at the highest boundary for that increment
+    And implementation should proceed boundary-by-boundary from API to adapters
+    And no lower-layer implementation should start before its upstream boundary test fails first

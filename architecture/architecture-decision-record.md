@@ -16,6 +16,19 @@ architecture-decision-record.md
 2. Executors do the actual work
 3. Local controllers can also be executors (flexible architecture)
 4. Platform adapters translate pseudocode to bash/platform-specific commands
+5. UI clients remain thin and dumb — no domain/business decision logic in UI
+
+## UI Client Principle (MANDATORY)
+- Angular clients are presentation-only and API-consumption-only.
+- All business rules, orchestration, authorization decisions, and policy evaluation live in backend layers.
+- UI may perform input validation for UX, but never authoritative validation for security or policy.
+- UI must not bypass backend contracts or call adapters/executors directly.
+
+## Delivery Method (MANDATORY)
+- Development is strict top-down TDD.
+- Apply iterative TDD one boundary at a time.
+- Sequence per capability: API contract test -> controller orchestration test -> service rule test -> repository/adapter test.
+- Do not implement deeper layers before the boundary test above them fails first.
 
 ## Scope - All Areas (Phased)
 - [x] Process/service management
@@ -93,6 +106,8 @@ Platform-specific scripts (bash, PowerShell, etc.)
 ## Testing & Quality Strategy
 - **Strict TDD (Test-Driven Development)**
   - Tests define behavior before implementation
+  - Top-down: start from boundary/contract tests and iterate downward
+  - One boundary at a time (do not open multiple unfinished boundaries)
   - Pseudocode must pass test suite
   - Adapters must pass platform-specific tests
   - No feature without passing tests

@@ -83,13 +83,14 @@ Our server control framework implements the mandatory six-tier pattern:
 #### Tier 1: CLI/Scheduler Presentation
 ```
 Responsibilities:
-- User interface (CLI, cron, webhook receivers, API clients)
+- User interface (Angular web client, CLI, cron, webhook receivers, API clients)
 - Accept user input
 - Display results/status
 - Schedule/trigger execution
 
 Rules:
 ✅ Zero business logic
+✅ Thin/dumb client only (presentation and API consumption)
 ✅ No framework coupling (no Spring imports)
 ✅ Delegates ALL decisions to Controllers
 ✅ Can be Bash, Python, Node.js, anything
@@ -230,7 +231,7 @@ public class FirewallService {
 ```
 
 This enables:
-- **Swapping implementations** (Linux → macOS → Windows at runtime)
+- **Swapping implementations** (Linux → Windows at runtime)
 - **Testing** (mock adapters in tests)
 - **Multi-tenancy** (different adapters per tenant if needed)
 
@@ -280,7 +281,7 @@ public class FirewallService {
         // Persist (scoped by tenant automatically)
         List<FirewallRule> persisted = repository.saveAll(rules);
         
-        // Deploy (via adapter - could be Linux, macOS, AWS, etc.)
+        // Deploy (via adapter - could be Linux, Windows, AWS, etc.)
         adapter.deploy(persisted);
         
         // Audit
@@ -295,7 +296,7 @@ public class FirewallService {
 impl FirewallService {
     pub async fn deploy_firewall_rules(&self, rules: Vec<FirewallRule>) {
         // Same logic, Rust syntax
-        // Adapter could be Linux, macOS, Windows, AWS...
+        // Adapter could be Linux, Windows, AWS...
     }
 }
 ```

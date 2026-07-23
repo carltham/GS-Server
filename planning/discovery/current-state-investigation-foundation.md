@@ -1,3 +1,5 @@
+current-state-investigation-foundation.md
+
 # State of Today - Current Server Architecture & Inventory
 
 ## Current Status

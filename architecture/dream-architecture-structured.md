@@ -1,3 +1,5 @@
+dream-architecture-structured.md
+
 # Dream Architecture Structured - Integrated with Common Standards
 
 **The perfect server control framework, built on proven organizational standards**
@@ -799,7 +801,7 @@ Following organizational scrum standards:
 - [API Design](../../project-settings/common/originals/development-rules/API_DESIGN.md)
 
 **Dream Architecture Reference:**
-- [Dream Architecture](./dream-architecture.md)
+- [Dream Architecture Vision](./dream-architecture-vision.md)
 
 **Implementation Roadmap:**
 - [Implementation Roadmap](./implementation-roadmap.md)

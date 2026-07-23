@@ -1,3 +1,5 @@
+dream-architecture-vision.md
+
 # Dream Architecture - The Perfect End State
 
 **Status**: ✨ Everything is working perfectly, everybody is happy

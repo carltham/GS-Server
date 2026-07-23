@@ -1,3 +1,5 @@
+wishlist.md
+
 # Server Control Architecture - Wishlist
 
 ## Primary Use Cases (From Q3)

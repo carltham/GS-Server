@@ -1,3 +1,5 @@
+server-control-architecture-decisions.md
+
 # Server Control Architecture - Key Decisions
 
 ## Core Philosophy

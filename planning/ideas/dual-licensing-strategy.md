@@ -1,3 +1,5 @@
+dual-licensing-strategy.md
+
 # Dual Licensing Strategy
 
 ## Overview

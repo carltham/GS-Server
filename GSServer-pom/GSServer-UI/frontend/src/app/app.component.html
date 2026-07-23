@@ -1,14 +1,72 @@
-<main class="container">
+<main class="container" *ngIf="isAuthenticated; else loginScreen">
   <section class="card">
-    <h1>GSServer UI</h1>
-    <p>Angular modular frontend is hosted by Spring Boot static resources.</p>
+    <div class="session-toolbar">
+      <div>
+        <h1>GSServer UI</h1>
+        <p>Signed in as {{ username }}.</p>
+      </div>
+      <mat-slide-toggle
+        [checked]="darkThemeEnabled"
+        (change)="onThemeToggle($event.checked)"
+        aria-label="Toggle dark theme"
+      >
+        Dark theme
+      </mat-slide-toggle>
+    </div>
 
     <nav class="tabs" aria-label="Primary navigation tabs">
       <a routerLink="/" routerLinkActive="tab-active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <a routerLink="/hardening" routerLinkActive="tab-active">Hardening</a>
       <a routerLink="/proxy" routerLinkActive="tab-active">Proxy</a>
     </nav>
+
+    <button type="button" (click)="logout()" style="margin-top: 12px;">Log out</button>
   </section>
 
   <router-outlet></router-outlet>
 </main>
+
+<ng-template #loginScreen>
+  <main class="container login-shell">
+    <mat-card class="card login-card mat-elevation-z8">
+      <p class="eyebrow">GS Server Control</p>
+      <h1 class="login-title">Sign in</h1>
+      <p class="login-subtitle">Authenticate to access hardening, proxy, and operations controls.</p>
+
+      <form class="login-form" (ngSubmit)="login()">
+        <mat-form-field appearance="outline">
+          <mat-label>Username</mat-label>
+          <input
+            matInput
+            type="text"
+            [(ngModel)]="usernameInput"
+            name="username"
+            autocomplete="username"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            type="password"
+            [(ngModel)]="passwordInput"
+            name="password"
+            autocomplete="current-password"
+          />
+        </mat-form-field>
+
+        <div class="login-actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
+          </button>
+          <button mat-stroked-button type="button" (click)="loginAsThor()" [disabled]="isSubmitting">
+            Thor Login
+          </button>
+        </div>
+
+        <p class="login-error" role="alert" *ngIf="loginError">{{ loginError }}</p>
+      </form>
+    </mat-card>
+  </main>
+</ng-template>

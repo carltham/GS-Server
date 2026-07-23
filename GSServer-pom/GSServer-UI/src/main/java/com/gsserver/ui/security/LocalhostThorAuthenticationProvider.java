@@ -1,0 +1,53 @@
+package com.gsserver.ui.security;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+public class LocalhostThorAuthenticationProvider extends DaoAuthenticationProvider {
+
+  private static final String THOR_USERNAME = "thor";
+
+  @Override
+  protected void additionalAuthenticationChecks(
+      UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) {
+    if (!THOR_USERNAME.equals(userDetails.getUsername())) {
+      super.additionalAuthenticationChecks(userDetails, authentication);
+      return;
+    }
+
+    String presentedPassword =
+        authentication.getCredentials() == null ? "" : authentication.getCredentials().toString();
+    if (!presentedPassword.isEmpty()) {
+      throw new BadCredentialsException("thor must authenticate without a password.");
+    }
+
+    if (!isLocalhostRequest()) {
+      throw new BadCredentialsException("thor is restricted to localhost login.");
+    }
+  }
+
+  private boolean isLocalhostRequest() {
+    if (!(RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes)) {
+      return false;
+    }
+
+    HttpServletRequest request = attributes.getRequest();
+    String remoteAddress = request.getRemoteAddr();
+    if (remoteAddress == null || remoteAddress.isBlank()) {
+      return false;
+    }
+
+    try {
+      return InetAddress.getByName(remoteAddress).isLoopbackAddress();
+    } catch (UnknownHostException exception) {
+      return false;
+    }
+  }
+}

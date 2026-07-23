@@ -8,8 +8,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 
 import com.gsserver.ui.api.ApiExceptionHandler;
+import com.gsserver.ui.security.SecurityConfig;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +22,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(HardeningController.class)
-@Import(ApiExceptionHandler.class)
+@Import({ApiExceptionHandler.class, SecurityConfig.class})
 class HardeningControllerContractTest {
+
+  private static final String OPERATOR_USER = "ui-operator";
+  private static final String OPERATOR_PASSWORD = "ui-operator-pass";
+  private static final String AUDITOR_USER = "ui-auditor";
+  private static final String AUDITOR_PASSWORD = "ui-auditor-pass";
+  private static final String THOR_USER = "thor";
+  private static final String THOR_PASSWORD = "";
 
   @Autowired
   private MockMvc mockMvc;
@@ -37,6 +46,7 @@ class HardeningControllerContractTest {
     mockMvc
       .perform(
         post("/api/v1/hardening")
+          .with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD))
           .contentType(MediaType.APPLICATION_JSON)
           .content("{" +
             "\"tenantId\":\"tenant-a\"," +
@@ -57,6 +67,7 @@ class HardeningControllerContractTest {
     mockMvc
       .perform(
         post("/api/v1/hardening")
+          .with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD))
           .contentType(MediaType.APPLICATION_JSON)
           .content("{" +
             "\"tenantId\":\"\"," +
@@ -75,6 +86,7 @@ class HardeningControllerContractTest {
       mockMvc
         .perform(
           post("/api/v1/hardening")
+            .with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
               "{"
@@ -94,6 +106,7 @@ class HardeningControllerContractTest {
       mockMvc
         .perform(
           post("/api/v1/hardening")
+            .with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
               "{"
@@ -113,6 +126,7 @@ class HardeningControllerContractTest {
       mockMvc
         .perform(
           post("/api/v1/hardening")
+            .with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
               "{"
@@ -132,6 +146,7 @@ class HardeningControllerContractTest {
       mockMvc
         .perform(
           post("/api/v1/hardening")
+            .with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
               "{"
@@ -151,6 +166,7 @@ class HardeningControllerContractTest {
       mockMvc
         .perform(
           post("/api/v1/hardening")
+            .with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
               "{"
@@ -167,6 +183,7 @@ class HardeningControllerContractTest {
     mockMvc
         .perform(
             post("/api/v1/hardening")
+              .with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{not-json}"))
         .andExpect(status().isBadRequest())
@@ -195,7 +212,58 @@ class HardeningControllerContractTest {
                     "Hardening request accepted")));
 
     mockMvc
+        .perform(get("/api/v1/hardening/latest").with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.operationId").value("operation-123"))
+        .andExpect(jsonPath("$.occurredAtUtc").value("2026-07-23T14:00:00Z"))
+        .andExpect(jsonPath("$.status").value("succeeded"))
+        .andExpect(jsonPath("$.tenantId").value("tenant-a"))
+        .andExpect(jsonPath("$.profile").value("baseline"))
+        .andExpect(jsonPath("$.platform").value("linux"));
+  }
+
+  @Test
+  void latestHardeningOperationStateReturnsUnauthorizedWithoutCredentials() throws Exception {
+    mockMvc
         .perform(get("/api/v1/hardening/latest"))
+        .andExpect(status().isUnauthorized());
+  }
+
+      @Test
+      void triggerHardeningReturnsForbiddenForAuditOnlyGroup() throws Exception {
+      mockMvc
+        .perform(
+          post("/api/v1/hardening")
+            .with(httpBasic(AUDITOR_USER, AUDITOR_PASSWORD))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+              "{"
+                + "\"tenantId\":\"tenant-a\","
+                + "\"requestedBy\":\"ui-operator\","
+                + "\"profile\":\"baseline\"}"))
+        .andExpect(status().isForbidden());
+      }
+
+      @Test
+      void latestHardeningOperationStateAllowsAuditReaderGroup() throws Exception {
+      when(hardeningService.getLatestOperationState())
+        .thenReturn(
+          Optional.of(
+            new HardeningOperationState(
+              "operation-123",
+              "2026-07-23T14:00:00Z",
+              "succeeded",
+              "tenant-a",
+              "ui-operator",
+              "baseline",
+              "linux",
+              0,
+              false,
+              "not-required",
+              "Hardening request accepted")));
+
+      mockMvc
+        .perform(get("/api/v1/hardening/latest").with(httpBasic(AUDITOR_USER, AUDITOR_PASSWORD)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.operationId").value("operation-123"))
         .andExpect(jsonPath("$.occurredAtUtc").value("2026-07-23T14:00:00Z"))
@@ -210,7 +278,71 @@ class HardeningControllerContractTest {
     when(hardeningService.getLatestOperationState()).thenReturn(Optional.empty());
 
     mockMvc
-        .perform(get("/api/v1/hardening/latest"))
+        .perform(get("/api/v1/hardening/latest").with(httpBasic(OPERATOR_USER, OPERATOR_PASSWORD)))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void triggerHardeningAllowsThorFromLocalhostWithoutPassword() throws Exception {
+    when(hardeningService.triggerHardening(any(HardeningRequest.class)))
+        .thenReturn(new HardeningResponse("accepted", "Hardening request accepted"));
+
+    mockMvc
+        .perform(
+            post("/api/v1/hardening")
+                .with(httpBasic(THOR_USER, THOR_PASSWORD))
+                .with(
+                    request -> {
+                      request.setRemoteAddr("127.0.0.1");
+                      return request;
+                    })
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{"
+                        + "\"tenantId\":\"tenant-a\","
+                        + "\"requestedBy\":\"ui-admin\","
+                        + "\"profile\":\"baseline\"}"))
+        .andExpect(status().isAccepted())
+        .andExpect(jsonPath("$.status").value("accepted"));
+  }
+
+  @Test
+  void triggerHardeningRejectsThorFromRemoteAddress() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/hardening")
+                .with(httpBasic(THOR_USER, THOR_PASSWORD))
+                .with(
+                    request -> {
+                      request.setRemoteAddr("10.1.2.3");
+                      return request;
+                    })
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{"
+                        + "\"tenantId\":\"tenant-a\","
+                        + "\"requestedBy\":\"ui-admin\","
+                        + "\"profile\":\"baseline\"}"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void triggerHardeningRejectsThorWhenPasswordIsProvided() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/hardening")
+                .with(httpBasic(THOR_USER, "hammer"))
+                .with(
+                    request -> {
+                      request.setRemoteAddr("127.0.0.1");
+                      return request;
+                    })
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{"
+                        + "\"tenantId\":\"tenant-a\","
+                        + "\"requestedBy\":\"ui-admin\","
+                        + "\"profile\":\"baseline\"}"))
+        .andExpect(status().isUnauthorized());
   }
 }

@@ -27,5 +27,6 @@ tests/ui/playwright-report/
 tests/ui/test-results/
 
 # Angular build output served by Spring Boot (generated)
+GSServer-pom/GSServer-UI/src/main/resources/static/
 GSServer-pom/GSServer-UI/src/main/resources/static/browser/
 GSServer-pom/GSServer-UI/src/main/resources/static/3rdpartylicenses.txt

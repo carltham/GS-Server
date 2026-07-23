@@ -5,6 +5,7 @@ import com.gsserver.ui.hardening.PolicyViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -27,6 +28,12 @@ public class ApiExceptionHandler {
   public ResponseEntity<ApiErrorResponse> handleExecutionFailure(HardeningExecutionException exception) {
     ApiErrorResponse error = new ApiErrorResponse("EXECUTION_FAILED", exception.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ApiErrorResponse> handleAccessDenied(AccessDeniedException exception) {
+    ApiErrorResponse error = new ApiErrorResponse("FORBIDDEN", "You are not allowed to perform this action.");
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
   }
 
   @ExceptionHandler(Exception.class)

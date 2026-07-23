@@ -1,0 +1,266 @@
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$gs-light-primary: mat.define-palette(mat.$blue-palette, 700);
+$gs-light-accent: mat.define-palette(mat.$cyan-palette, 400);
+$gs-light-warn: mat.define-palette(mat.$red-palette);
+
+$gs-dark-primary: mat.define-palette(mat.$blue-palette, 300);
+$gs-dark-accent: mat.define-palette(mat.$cyan-palette, 200);
+$gs-dark-warn: mat.define-palette(mat.$red-palette, 300);
+
+$gs-light-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $gs-light-primary,
+      accent: $gs-light-accent,
+      warn: $gs-light-warn
+    )
+  )
+);
+
+$gs-dark-theme: mat.define-dark-theme(
+  (
+    color: (
+      primary: $gs-dark-primary,
+      accent: $gs-dark-accent,
+      warn: $gs-dark-warn
+    )
+  )
+);
+
+@include mat.all-component-themes($gs-light-theme);
+
+html.theme-light {
+  color-scheme: light;
+}
+
+html.theme-dark {
+  @include mat.all-component-colors($gs-dark-theme);
+  color-scheme: dark;
+}
+
+:root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+html.theme-light body {
+  background: #f6f8fb;
+  color: #13212f;
+}
+
+html.theme-dark body {
+  background: #0f1724;
+  color: #e6edf5;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.card {
+  border: 1px solid;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+html.theme-light .card {
+  background: #ffffff;
+  border-color: #dbe5ef;
+}
+
+html.theme-dark .card {
+  background: #172233;
+  border-color: #2f425a;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.tabs a {
+  text-decoration: none;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+
+html.theme-light .tabs a {
+  color: #1d3650;
+  background: #eef4fb;
+  border-color: #ccdced;
+}
+
+html.theme-dark .tabs a {
+  color: #d5e5f5;
+  background: #1d3044;
+  border-color: #3a516a;
+}
+
+.tabs a.tab-active {
+  background: #1d3650;
+  color: #ffffff;
+  border-color: #1d3650;
+}
+
+.hero {
+  background: linear-gradient(135deg, #f5f9ff 0%, #ffffff 55%, #eef5fb 100%);
+}
+
+html.theme-dark .hero {
+  background: linear-gradient(135deg, #162435 0%, #1a2a3d 55%, #1d3249 100%);
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+  color: #3c5f7f;
+}
+
+html.theme-dark .eyebrow {
+  color: #90aeca;
+}
+
+.hero h2 {
+  margin: 8px 0 10px;
+  line-height: 1.3;
+}
+
+.hero-copy {
+  margin: 0;
+  max-width: 72ch;
+}
+
+.stack-gap > *:first-child {
+  margin-top: 0;
+}
+
+.stack-gap > *:last-child {
+  margin-bottom: 0;
+}
+
+.feature-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-row p {
+  margin: 0;
+}
+
+.session-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.login-shell {
+  min-height: calc(100vh - 48px);
+  display: grid;
+  place-items: center;
+}
+
+.login-card {
+  width: min(100%, 520px);
+  border-radius: 20px;
+  padding: 28px;
+}
+
+.login-title {
+  margin: 8px 0 6px;
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.login-subtitle {
+  margin: 0 0 20px;
+  opacity: 0.86;
+}
+
+.login-form {
+  display: grid;
+  gap: 8px;
+}
+
+.login-form .mat-mdc-form-field {
+  width: 100%;
+}
+
+.login-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.login-actions button {
+  min-height: 44px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.login-error {
+  margin: 8px 0 0;
+  color: #b3261e;
+  font-weight: 600;
+}
+
+html.theme-dark .login-error {
+  color: #ffb4ab;
+}
+
+html.theme-light .login-shell {
+  background:
+    radial-gradient(circle at 15% 18%, rgba(15, 93, 190, 0.12), transparent 35%),
+    radial-gradient(circle at 86% 7%, rgba(23, 166, 175, 0.1), transparent 28%);
+}
+
+html.theme-dark .login-shell {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(120, 174, 231, 0.2), transparent 35%),
+    radial-gradient(circle at 84% 10%, rgba(79, 206, 214, 0.16), transparent 32%);
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 14px;
+  }
+
+  .login-card {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .login-title {
+    font-size: 26px;
+  }
+
+  .login-actions {
+    grid-template-columns: 1fr;
+  }
+}

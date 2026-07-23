@@ -4,3 +4,28 @@ server:
 spring:
   application:
     name: gsserver-ui
+
+gsserver:
+  security:
+    users:
+      - username: demo
+        password: ${GS_USER_DEMO_PASSWORD:demo-pass}
+        authorities:
+          - GROUP_HARDENING_OPERATORS
+      - username: ui-operator
+        password: ${GS_USER_OPERATOR_PASSWORD:ui-operator-pass}
+        authorities:
+          - GROUP_HARDENING_OPERATORS
+      - username: ui-admin
+        password: ${GS_USER_ADMIN_PASSWORD:ui-admin-pass}
+        authorities:
+          - GROUP_HARDENING_ADMINS
+      - username: ui-auditor
+        password: ${GS_USER_AUDITOR_PASSWORD:ui-auditor-pass}
+        authorities:
+          - GROUP_AUDIT_READERS
+      - username: thor
+        password: ${GS_USER_THOR_PASSWORD:}
+        authorities:
+          - GROUP_HARDENING_ADMINS
+          - GROUP_SUPERUSER

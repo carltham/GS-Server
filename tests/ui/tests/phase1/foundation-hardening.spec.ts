@@ -2,17 +2,21 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Phase 1 Foundation and Defence @phase1', () => {
   test('UI can trigger hardening flow through API boundary', async ({ page }) => {
-    test.fixme(true, 'Enable when Angular hardening page and API route are available');
+    const responsePromise = page.waitForResponse((response) =>
+      response.url().includes('/api/v1/hardening') &&
+      response.request().method() === 'POST'
+    );
 
-    const requests: string[] = [];
-    await page.route('**/api/**', async (route) => {
-      requests.push(route.request().url());
-      await route.continue();
-    });
-
-    await page.goto('/hardening');
+    await page.goto('/');
     await page.getByRole('button', { name: /run hardening/i }).click();
 
-    await expect.poll(() => requests.some((u) => /\/api\/(v1\/)?hardening/.test(u))).toBeTruthy();
+    const response = await responsePromise;
+    expect(response.status()).toBe(202);
+
+    const body = await response.json();
+    expect(body.status).toBe('accepted');
+    expect(body.message).toBe('Hardening request accepted');
+
+    await expect(page.getByRole('status')).toContainText('Hardening request accepted');
   });
 });

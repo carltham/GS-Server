@@ -1,4 +1,4 @@
-state-of-tomorrow.md
+target-architecture-overview.md
 
 # State of Tomorrow - Future Server Control Architecture
 

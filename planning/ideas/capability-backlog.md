@@ -1,4 +1,4 @@
-wishlist.md
+capability-backlog.md
 
 # Server Control Architecture - Wishlist
 

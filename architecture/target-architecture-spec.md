@@ -1,4 +1,4 @@
-dream-architecture-structured.md
+target-architecture-spec.md
 
 # Dream Architecture Structured - Integrated with Common Standards
 
@@ -804,7 +804,7 @@ Following organizational scrum standards:
 - [Dream Architecture Vision](./dream-architecture-vision.md)
 
 **Implementation Roadmap:**
-- [Implementation Roadmap](./implementation-roadmap.md)
+- [Implementation Roadmap](../planning/roadmaps/architecture-implementation-roadmap.md)
 
 ---
 

@@ -1,4 +1,4 @@
-dual-licensing-strategy.md
+licensing-commercialization-strategy.md
 
 # Dual Licensing Strategy
 

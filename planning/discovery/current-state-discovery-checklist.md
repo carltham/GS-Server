@@ -1,4 +1,4 @@
-current-state-investigation-foundation.md
+current-state-discovery-checklist.md
 
 # State of Today - Current Server Architecture & Inventory
 

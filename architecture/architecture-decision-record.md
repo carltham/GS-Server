@@ -1,4 +1,4 @@
-server-control-architecture-decisions.md
+architecture-decision-record.md
 
 # Server Control Architecture - Key Decisions
 

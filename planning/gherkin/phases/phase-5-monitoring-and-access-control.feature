@@ -27,3 +27,9 @@ Feature: Phase 5 - Monitoring and Access Control
     When user lifecycle and permission adapters are implemented
     Then access grants and revocations should be fully auditable
     And unauthorized actions should be blocked
+
+  Scenario: Apply cross-cutting quality gates to Phase 5
+    Given Phase 5 implementation work is in progress
+    When quality-gate validation is executed
+    Then all scenarios in cross-cutting-quality-gates.feature should pass
+    And Phase 5 should not be marked complete if any quality gate fails

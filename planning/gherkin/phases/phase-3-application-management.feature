@@ -26,3 +26,9 @@ Feature: Phase 3 - Application Management
     When deployment adapters are executed in test environments
     Then deployments should complete without manual host configuration
     And rollback should return services to the prior known-good state
+
+  Scenario: Apply cross-cutting quality gates to Phase 3
+    Given Phase 3 implementation work is in progress
+    When quality-gate validation is executed
+    Then all scenarios in cross-cutting-quality-gates.feature should pass
+    And Phase 3 should not be marked complete if any quality gate fails

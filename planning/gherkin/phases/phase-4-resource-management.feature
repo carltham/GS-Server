@@ -21,3 +21,9 @@ Feature: Phase 4 - Resource Management
     When monitoring and quota adapters are implemented
     Then threshold breaches should trigger alerts
     And quota limits should be enforced without cross-tenant impact
+
+  Scenario: Apply cross-cutting quality gates to Phase 4
+    Given Phase 4 implementation work is in progress
+    When quality-gate validation is executed
+    Then all scenarios in cross-cutting-quality-gates.feature should pass
+    And Phase 4 should not be marked complete if any quality gate fails

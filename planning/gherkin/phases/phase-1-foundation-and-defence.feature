@@ -27,3 +27,9 @@ Feature: Phase 1 - Foundation and Defence
     When Linux and Windows hardening adapters are implemented
     Then hardening checks should pass on target test hosts
     And results should be captured in verification notes
+
+  Scenario: Apply cross-cutting quality gates to Phase 1
+    Given Phase 1 implementation work is in progress
+    When quality-gate validation is executed
+    Then all scenarios in cross-cutting-quality-gates.feature should pass
+    And Phase 1 should not be marked complete if any quality gate fails

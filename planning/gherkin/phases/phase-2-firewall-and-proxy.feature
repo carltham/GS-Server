@@ -27,3 +27,9 @@ Feature: Phase 2 - Firewall and Proxy
     When nginx and Apache adapters are implemented
     Then routing and TLS configuration should be applied successfully
     And failure rollback should restore the previous working config
+
+  Scenario: Apply cross-cutting quality gates to Phase 2
+    Given Phase 2 implementation work is in progress
+    When quality-gate validation is executed
+    Then all scenarios in cross-cutting-quality-gates.feature should pass
+    And Phase 2 should not be marked complete if any quality gate fails

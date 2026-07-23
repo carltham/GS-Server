@@ -16,12 +16,6 @@ Feature: Phase 2 - Server Gateway Proxy Controller
     Then each capability should be marked as not-started, partial, or complete
     And each result should include evidence, implementation flow, and known constraints
 
-  Scenario: Kick off Phase 2 discovery for nginx HTTPS control
-    Given Phase 1 hardening work is stable
-    When the team starts Phase 2 discovery
-    Then current nginx HTTPS proxy requirements should be collected
-    And policy, rollback, and audit boundaries should be identified first
-
   Scenario: Define server gateway proxy controller contract
     Given HTTPS proxy routing requirements are approved
     When controller and service contracts for gateway proxy control are defined

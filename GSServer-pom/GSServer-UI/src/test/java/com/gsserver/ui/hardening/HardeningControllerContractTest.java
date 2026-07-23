@@ -4,11 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.gsserver.ui.api.ApiExceptionHandler;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -172,5 +174,43 @@ class HardeningControllerContractTest {
         .andExpect(jsonPath("$.message").value("Request body is malformed."));
 
     verifyNoInteractions(hardeningService);
+  }
+
+  @Test
+  void latestHardeningOperationStateReturnsCurrentState() throws Exception {
+    when(hardeningService.getLatestOperationState())
+        .thenReturn(
+            Optional.of(
+                new HardeningOperationState(
+                  "operation-123",
+                  "2026-07-23T14:00:00Z",
+                    "succeeded",
+                    "tenant-a",
+                    "ui-operator",
+                    "baseline",
+                    "linux",
+                    0,
+                    false,
+                    "not-required",
+                    "Hardening request accepted")));
+
+    mockMvc
+        .perform(get("/api/v1/hardening/latest"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.operationId").value("operation-123"))
+        .andExpect(jsonPath("$.occurredAtUtc").value("2026-07-23T14:00:00Z"))
+        .andExpect(jsonPath("$.status").value("succeeded"))
+        .andExpect(jsonPath("$.tenantId").value("tenant-a"))
+        .andExpect(jsonPath("$.profile").value("baseline"))
+        .andExpect(jsonPath("$.platform").value("linux"));
+  }
+
+  @Test
+  void latestHardeningOperationStateReturnsNotFoundWhenNoState() throws Exception {
+    when(hardeningService.getLatestOperationState()).thenReturn(Optional.empty());
+
+    mockMvc
+        .perform(get("/api/v1/hardening/latest"))
+        .andExpect(status().isNotFound());
   }
 }

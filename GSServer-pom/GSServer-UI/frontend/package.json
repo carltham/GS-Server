@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "start": "ng serve --host 0.0.0.0 --port 4200",
+    "start:hot": "ng serve --host 0.0.0.0 --port 4200 --proxy-config proxy.conf.json",
+    "start:hmr": "ng serve --host 0.0.0.0 --port 4200 --proxy-config proxy.conf.json --hmr",
     "build": "ng build",
+    "build:watch": "ng build --configuration development --watch",
     "build:prod": "ng build --configuration production",
     "test": "ng test --watch=false"
   },

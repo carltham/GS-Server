@@ -1,0 +1,15 @@
+<section class="card stack-gap" style="margin-top: 16px;">
+  <h2>Hardening</h2>
+  <p>Run system hardening through the backend policy and adapter boundaries.</p>
+  <div class="action-row">
+    <button
+      type="button"
+      aria-label="run hardening"
+      (click)="runHardening()"
+      [disabled]="isSubmitting"
+    >
+      {{ isSubmitting ? 'Running Hardening...' : 'Run Hardening' }}
+    </button>
+    <p role="status" aria-live="polite">{{ statusMessage }}</p>
+  </div>
+</section>

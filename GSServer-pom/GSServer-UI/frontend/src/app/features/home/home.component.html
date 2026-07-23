@@ -1,13 +1,29 @@
-<section class="card" style="margin-top: 16px;">
-  <h2>Home</h2>
-  <p>Phase 1 top-down UI test target is ready.</p>
-  <button
-    type="button"
-    aria-label="run hardening"
-    (click)="runHardening()"
-    [disabled]="isSubmitting"
-  >
-    {{ isSubmitting ? 'Running Hardening...' : 'Run Hardening' }}
-  </button>
-  <p role="status" aria-live="polite" style="margin-top: 12px;">{{ statusMessage }}</p>
+<section class="hero card" style="margin-top: 16px;">
+  <p class="eyebrow">GS Server Control</p>
+  <h2>Control critical server operations from one backend-managed interface.</h2>
+  <p class="hero-copy">
+    This application provides a secure orchestration layer for platform operations such as
+    hardening, gateway proxy control, firewall policy management, and auditable execution flows.
+  </p>
+</section>
+
+<section class="card stack-gap" style="margin-top: 16px;">
+  <h3>What this application is for</h3>
+  <ul class="feature-list">
+    <li>Expose stable API boundaries for server control operations.</li>
+    <li>Enforce policy validation before privileged commands are executed.</li>
+    <li>Route execution through platform adapters with rollback support.</li>
+    <li>Record operation outcomes for operators and compliance evidence.</li>
+  </ul>
+</section>
+
+<section class="card stack-gap" style="margin-top: 16px;">
+  <h3>How to use it</h3>
+  <p>Navigate by tabs:</p>
+  <ul class="feature-list">
+    <li><strong>Home</strong>: Product purpose and execution context.</li>
+    <li><strong>Hardening</strong>: Trigger and monitor hardening operations.</li>
+    <li><strong>Proxy</strong>: Manage gateway proxy control slices (in progress).</li>
+  </ul>
+  <p>Use the <strong>Hardening</strong> tab to execute hardening operations.</p>
 </section>

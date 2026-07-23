@@ -25,6 +25,19 @@ public class LinuxHardeningAdapter {
         "linux", result.exitCode(), result.stdout(), result.stderr(), result.timedOut());
   }
 
+  public HardeningExecutionReport applyStrictHardening() {
+    List<String> command =
+        List.of(
+            "/usr/bin/env",
+            "bash",
+            "-lc",
+            "echo linux-hardening-strict && echo strict-no-error 1>&2 && exit 0");
+
+    CommandExecutionResult result = commandExecutor.execute(command, Duration.ofMinutes(2));
+    return new HardeningExecutionReport(
+        "linux", result.exitCode(), result.stdout(), result.stderr(), result.timedOut());
+  }
+
   public HardeningExecutionReport rollbackBaselineHardening() {
     List<String> command =
         List.of(
@@ -32,6 +45,19 @@ public class LinuxHardeningAdapter {
             "bash",
             "-lc",
             "echo linux-hardening-rollback && echo rollback-no-error 1>&2 && exit 0");
+
+    CommandExecutionResult result = commandExecutor.execute(command, Duration.ofMinutes(2));
+    return new HardeningExecutionReport(
+        "linux", result.exitCode(), result.stdout(), result.stderr(), result.timedOut());
+  }
+
+  public HardeningExecutionReport rollbackStrictHardening() {
+    List<String> command =
+        List.of(
+            "/usr/bin/env",
+            "bash",
+            "-lc",
+            "echo linux-hardening-strict-rollback && echo strict-rollback-no-error 1>&2 && exit 0");
 
     CommandExecutionResult result = commandExecutor.execute(command, Duration.ofMinutes(2));
     return new HardeningExecutionReport(

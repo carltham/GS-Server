@@ -2,7 +2,12 @@
   <section class="card">
     <h1>GSServer UI</h1>
     <p>Angular modular frontend is hosted by Spring Boot static resources.</p>
-    <a routerLink="/">Home</a>
+
+    <nav class="tabs" aria-label="Primary navigation tabs">
+      <a routerLink="/" routerLinkActive="tab-active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/hardening" routerLinkActive="tab-active">Hardening</a>
+      <a routerLink="/proxy" routerLinkActive="tab-active">Proxy</a>
+    </nav>
   </section>
 
   <router-outlet></router-outlet>

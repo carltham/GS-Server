@@ -1,6 +1,7 @@
 package com.gsserver.ui.hardening;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,5 +20,10 @@ public class HardeningController {
   public ResponseEntity<HardeningResponse> triggerHardening(@RequestBody HardeningRequest request) {
     HardeningResponse response = hardeningService.triggerHardening(request);
     return ResponseEntity.accepted().body(response);
+  }
+
+  @GetMapping("/latest")
+  public ResponseEntity<HardeningOperationState> latestHardeningOperationState() {
+    return ResponseEntity.of(hardeningService.getLatestOperationState());
   }
 }

@@ -3,6 +3,9 @@ package com.gsserver.ui.hardening;
 import com.gsserver.ui.hardening.adapter.HardeningExecutionReport;
 import com.gsserver.ui.hardening.adapter.LinuxHardeningAdapter;
 import com.gsserver.ui.hardening.adapter.WindowsHardeningAdapter;
+import java.time.Instant;
+import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -21,15 +24,72 @@ class DefaultHardeningServiceTest {
     when(linuxAdapter.applyBaselineHardening())
         .thenReturn(new HardeningExecutionReport("linux", 0, "ok", "", false));
 
-    DefaultHardeningService service = new DefaultHardeningService(linuxAdapter, windowsAdapter);
+    HardeningOperationStateStore stateStore = new InMemoryHardeningOperationStateStore();
+
+    DefaultHardeningService service =
+      new DefaultHardeningService(
+        linuxAdapter,
+        windowsAdapter,
+        stateStore,
+        () -> DefaultHardeningService.ExecutionPlatform.LINUX);
 
     HardeningResponse response =
         service.triggerHardening(new HardeningRequest("tenant-a", "ui-operator", "baseline"));
 
     assertThat(response.status()).isEqualTo("accepted");
     assertThat(response.message()).isEqualTo("Hardening request accepted");
+    Optional<HardeningOperationState> latest = service.getLatestOperationState();
+    assertThat(latest).isPresent();
+    assertThat(latest.get().operationId()).isNotBlank();
+    assertThatCode(() -> Instant.parse(latest.get().occurredAtUtc())).doesNotThrowAnyException();
+    assertThat(latest.get().status()).isEqualTo("succeeded");
+    assertThat(latest.get().rollbackStatus()).isEqualTo("not-required");
     verify(linuxAdapter, never()).rollbackBaselineHardening();
   }
+
+    @Test
+    void triggerHardeningUsesStrictPathOnLinux() {
+    LinuxHardeningAdapter linuxAdapter = mock(LinuxHardeningAdapter.class);
+    WindowsHardeningAdapter windowsAdapter = mock(WindowsHardeningAdapter.class);
+    when(linuxAdapter.applyStrictHardening())
+      .thenReturn(new HardeningExecutionReport("linux", 0, "strict ok", "", false));
+
+    DefaultHardeningService service =
+      new DefaultHardeningService(
+        linuxAdapter,
+        windowsAdapter,
+        new InMemoryHardeningOperationStateStore(),
+        () -> DefaultHardeningService.ExecutionPlatform.LINUX);
+
+    HardeningResponse response =
+      service.triggerHardening(new HardeningRequest("tenant-a", "ui-admin", "strict"));
+
+    assertThat(response.status()).isEqualTo("accepted");
+    verify(linuxAdapter).applyStrictHardening();
+    verify(windowsAdapter, never()).applyStrictHardening();
+    }
+
+    @Test
+    void triggerHardeningUsesStrictPathOnWindows() {
+    LinuxHardeningAdapter linuxAdapter = mock(LinuxHardeningAdapter.class);
+    WindowsHardeningAdapter windowsAdapter = mock(WindowsHardeningAdapter.class);
+    when(windowsAdapter.applyStrictHardening())
+      .thenReturn(new HardeningExecutionReport("windows", 0, "strict ok", "", false));
+
+    DefaultHardeningService service =
+      new DefaultHardeningService(
+        linuxAdapter,
+        windowsAdapter,
+        new InMemoryHardeningOperationStateStore(),
+        () -> DefaultHardeningService.ExecutionPlatform.WINDOWS);
+
+    HardeningResponse response =
+      service.triggerHardening(new HardeningRequest("tenant-a", "ui-admin", "strict"));
+
+    assertThat(response.status()).isEqualTo("accepted");
+    verify(windowsAdapter).applyStrictHardening();
+    verify(linuxAdapter, never()).applyStrictHardening();
+    }
 
   @Test
   void triggerHardeningRejectsBlankTenantId() {
@@ -82,13 +142,26 @@ class DefaultHardeningServiceTest {
     when(linuxAdapter.rollbackBaselineHardening())
       .thenReturn(new HardeningExecutionReport("linux", 0, "rolled back", "", false));
 
-    DefaultHardeningService service = new DefaultHardeningService(linuxAdapter, windowsAdapter);
+    HardeningOperationStateStore stateStore = new InMemoryHardeningOperationStateStore();
+
+    DefaultHardeningService service =
+      new DefaultHardeningService(
+        linuxAdapter,
+        windowsAdapter,
+        stateStore,
+        () -> DefaultHardeningService.ExecutionPlatform.LINUX);
 
     assertThatThrownBy(
             () -> service.triggerHardening(new HardeningRequest("tenant-a", "ui-operator", "baseline")))
         .isInstanceOf(HardeningExecutionException.class)
       .hasMessageContaining("Hardening execution failed on linux")
       .hasMessageContaining("rollback succeeded");
+    Optional<HardeningOperationState> latest = service.getLatestOperationState();
+    assertThat(latest).isPresent();
+    assertThat(latest.get().operationId()).isNotBlank();
+    assertThatCode(() -> Instant.parse(latest.get().occurredAtUtc())).doesNotThrowAnyException();
+    assertThat(latest.get().status()).isEqualTo("failed");
+    assertThat(latest.get().rollbackStatus()).isEqualTo("succeeded");
     verify(linuxAdapter).rollbackBaselineHardening();
   }
 
@@ -97,8 +170,16 @@ class DefaultHardeningServiceTest {
     WindowsHardeningAdapter windowsAdapter = mock(WindowsHardeningAdapter.class);
     when(linuxAdapter.applyBaselineHardening())
         .thenReturn(new HardeningExecutionReport("linux", 0, "ok", "", false));
+    when(linuxAdapter.applyStrictHardening())
+      .thenReturn(new HardeningExecutionReport("linux", 0, "strict ok", "", false));
     when(windowsAdapter.applyBaselineHardening())
         .thenReturn(new HardeningExecutionReport("windows", 0, "ok", "", false));
-    return new DefaultHardeningService(linuxAdapter, windowsAdapter);
+    when(windowsAdapter.applyStrictHardening())
+      .thenReturn(new HardeningExecutionReport("windows", 0, "strict ok", "", false));
+    return new DefaultHardeningService(
+      linuxAdapter,
+      windowsAdapter,
+      new InMemoryHardeningOperationStateStore(),
+      () -> DefaultHardeningService.ExecutionPlatform.LINUX);
   }
 }

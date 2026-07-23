@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { HomeComponent } from './home.component';
+import { HardeningComponent } from './hardening.component';
+import { ProxyComponent } from './proxy.component';
 
 const routes: Routes = [
   {
@@ -10,7 +12,11 @@ const routes: Routes = [
   },
   {
     path: 'hardening',
-    component: HomeComponent
+    component: HardeningComponent
+  },
+  {
+    path: 'proxy',
+    component: ProxyComponent
   }
 ];
 

@@ -65,4 +65,42 @@ class WindowsHardeningAdapterTest {
     assertThat(report.stdout()).isEqualTo("rolled back");
     assertThat(report.successful()).isTrue();
   }
+
+  @Test
+  void applyStrictHardeningUsesStrictCommandPath() {
+    List<String> executedCommand = new ArrayList<>();
+
+    HardeningCommandExecutor executor =
+        (command, timeout) -> {
+          executedCommand.addAll(command);
+          return new CommandExecutionResult(0, "strict ok", "", false);
+        };
+
+    WindowsHardeningAdapter adapter = new WindowsHardeningAdapter(executor);
+    HardeningExecutionReport report = adapter.applyStrictHardening();
+
+    assertThat(executedCommand).contains("powershell");
+    assertThat(executedCommand.get(executedCommand.size() - 1)).contains("strict");
+    assertThat(report.stdout()).isEqualTo("strict ok");
+    assertThat(report.successful()).isTrue();
+  }
+
+  @Test
+  void rollbackStrictHardeningUsesStrictRollbackCommandPath() {
+    List<String> executedCommand = new ArrayList<>();
+
+    HardeningCommandExecutor executor =
+        (command, timeout) -> {
+          executedCommand.addAll(command);
+          return new CommandExecutionResult(0, "strict rolled back", "", false);
+        };
+
+    WindowsHardeningAdapter adapter = new WindowsHardeningAdapter(executor);
+    HardeningExecutionReport report = adapter.rollbackStrictHardening();
+
+    assertThat(executedCommand).contains("powershell");
+    assertThat(executedCommand.get(executedCommand.size() - 1)).contains("strict-rollback");
+    assertThat(report.stdout()).isEqualTo("strict rolled back");
+    assertThat(report.successful()).isTrue();
+  }
 }

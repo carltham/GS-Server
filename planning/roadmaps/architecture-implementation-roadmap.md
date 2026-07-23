@@ -47,14 +47,14 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 #### Sprint 1.3: System Hardening Automation
 **Duration**: 1 week
 - [ ] Define hardening rules (user isolation, permissions)
-- [ ] Create adapters for hardening on Linux/macOS
+- [ ] Create adapters for hardening on Linux/Windows
 - [ ] Test hardening on real server
 - [ ] Document hardening playbook
 
 **Deliverables**:
 - hardening-pseudocode.md
 - linux-hardening-adapter.sh
-- macos-hardening-adapter.sh
+- windows-hardening-adapter.ps1
 - hardening-runbook.md
 
 ---
@@ -71,13 +71,13 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 #### Sprint 2.1: Multi-Platform Firewall Adapters
 **Duration**: 1 week
-- [ ] macOS/pf firewall adapter
+- [ ] Linux/iptables firewall adapter hardening and completion
 - [ ] Windows/WinRM firewall adapter
 - [ ] Cloud provider adapters (AWS security groups, etc.)
 - [ ] Test on all platforms
 
 **Deliverables**:
-- macos-firewall-adapter.sh
+- linux-firewall-adapter.sh
 - windows-firewall-adapter.ps1
 - aws-firewall-adapter.sh
 - firewall-adapter-tests.md
@@ -124,13 +124,11 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 **Duration**: 1 week
 - [ ] Define service operations (start, stop, restart, status)
 - [ ] Create systemd adapter (Linux)
-- [ ] Create launchd adapter (macOS)
 - [ ] Create Windows services adapter
 
 **Deliverables**:
 - service-pseudocode.md
 - linux-service-adapter.sh
-- macos-service-adapter.sh
 - windows-service-adapter.ps1
 
 #### Sprint 3.2: Application Deployment
@@ -161,13 +159,13 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 **Duration**: 1 week
 - [ ] Pseudocode for resource queries
 - [ ] Linux (cgroups, /proc) adapters
-- [ ] macOS adapters
+- [ ] Windows resource adapters
 - [ ] Monitoring integrations
 
 **Deliverables**:
 - resource-pseudocode.md
 - linux-resource-adapter.sh
-- macos-resource-adapter.sh
+- windows-resource-adapter.ps1
 
 #### Sprint 4.2: Resource Enforcement & Quotas
 **Duration**: 1 week

@@ -18,7 +18,7 @@ Feature: Phase 2 - Firewall and Proxy
 
   Scenario: Deliver multi-platform firewall adapters
     Given firewall pseudocode rules are defined
-    When adapters for Linux, macOS, Windows, and one cloud provider are implemented
+    When adapters for Linux, Windows, and one cloud provider are implemented
     Then equivalent policy behavior should be verified across platforms
     And rollback behavior should be validated
 

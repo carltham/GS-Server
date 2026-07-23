@@ -84,8 +84,11 @@ Platform-specific scripts (bash, PowerShell, etc.)
 ## Starting Technology Stack
 - **Language**: Java
 - **Framework**: Spring Boot
+- **User Interface**: Angular (definitive choice)
+- **UI Integration Model**: Angular SPA consuming Spring Boot REST APIs
 - **Note**: This is implementation v1. Pseudocode remains constant; future implementations can use Rust, C++, PHP, Bash, etc.
-- **Target platforms for adapters**: Linux, macOS, Windows, AWS, GCP, Azure
+- **Target platforms for adapters (near-term)**: Linux, Windows, AWS, GCP, Azure
+- **macOS**: Not in current implementation scope
 
 ## Testing & Quality Strategy
 - **Strict TDD (Test-Driven Development)**

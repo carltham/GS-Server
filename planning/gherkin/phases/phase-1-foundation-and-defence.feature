@@ -24,6 +24,6 @@ Feature: Phase 1 - Foundation and Defence
 
   Scenario: Implement initial hardening automation
     Given hardening gaps are identified in discovery
-    When Linux and macOS hardening adapters are implemented
+    When Linux and Windows hardening adapters are implemented
     Then hardening checks should pass on target test hosts
     And results should be captured in verification notes

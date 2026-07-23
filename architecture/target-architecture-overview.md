@@ -20,22 +20,26 @@ A complete, platform-agnostic server control framework with:
 
 ### 2. Adapter Layer
 - **Linux adapters** (bash via iptables, systemctl, etc.)
-- **macOS adapters** (bash via pf, launchd, etc.)
 - **Windows adapters** (PowerShell, WinRM, etc.)
 - **Cloud adapters** (AWS, GCP, Azure security rules, etc.)
 - **Proxy adapters** (nginx, Apache, dedicated proxy servers)
 
-### 3. Configuration Management
+### 3. User Interaction Layer
+- **Angular Web UI** (primary operator interface)
+- **Spring Boot REST API** (backend contract for Angular)
+- **CLI/API triggers** for automation and operator fallback
+
+### 4. Configuration Management
 - File-based storage (git-versioned)
 - Database storage (dynamic, updateable)
 - Hybrid approach (database as source of truth)
 
-### 4. Script Execution Model
+### 5. Script Execution Model
 - Local controllers that also execute
 - Remote executors (agent-based if needed)
 - Trigger mechanisms (cron, webhooks, CLI, API, daemon)
 
-### 5. Operational Capabilities (Full Stack)
+### 6. Operational Capabilities (Full Stack)
 
 #### Defence & Sandboxing (Phase 1)
 - System hardening rules
@@ -97,7 +101,6 @@ A complete, platform-agnostic server control framework with:
 |----------|-------|--------|
 | Linux (debian/ubuntu) | TBD | Planned |
 | Linux (RHEL/CentOS) | TBD | Planned |
-| macOS | TBD | Planned |
 | Windows | TBD | Planned |
 | AWS | TBD | Planned |
 | GCP | TBD | Planned |

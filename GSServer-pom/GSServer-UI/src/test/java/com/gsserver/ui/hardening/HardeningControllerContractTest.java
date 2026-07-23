@@ -122,6 +122,25 @@ class HardeningControllerContractTest {
         .andExpect(jsonPath("$.message").value("profile is not supported."));
       }
 
+      @Test
+      void triggerHardeningReturnsStructuredErrorOnExecutionFailure() throws Exception {
+      when(hardeningService.triggerHardening(any(HardeningRequest.class)))
+        .thenThrow(new HardeningExecutionException("Hardening execution failed on linux: denied"));
+
+      mockMvc
+        .perform(
+          post("/api/v1/hardening")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+              "{"
+                + "\"tenantId\":\"tenant-a\","
+                + "\"requestedBy\":\"ui-operator\","
+                + "\"profile\":\"baseline\"}"))
+        .andExpect(status().isInternalServerError())
+        .andExpect(jsonPath("$.code").value("EXECUTION_FAILED"))
+        .andExpect(jsonPath("$.message").value("Hardening execution failed on linux: denied"));
+      }
+
   @Test
   void triggerHardeningReturnsStructuredErrorOnMalformedRequest() throws Exception {
     mockMvc

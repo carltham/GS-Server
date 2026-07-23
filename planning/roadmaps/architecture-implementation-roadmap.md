@@ -31,18 +31,18 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - executor-interface.md
 - example-pseudocode.md
 
-#### Sprint 1.2: Firewall Pseudocode & First Adapter
+#### Sprint 1.2: Hardening Contract & First Adapter
 **Duration**: 1 week
-- [ ] Define firewall rules in pseudocode
-- [ ] Create Linux/iptables adapter
-- [ ] Test adapter with real firewall rules
-- [ ] Document adapter interface
+- [ ] Define hardening control pseudocode
+- [ ] Define hardening request/response contract
+- [ ] Create first Linux hardening adapter slice
+- [ ] Validate adapter behavior with deterministic tests
 
 **Deliverables**:
-- firewall-pseudocode.md
-- linux-firewall-adapter.sh
-- adapter-interface.md
-- firewall-tests.md
+- hardening-control-pseudocode.md
+- hardening-api-contract.md
+- linux-hardening-adapter.sh
+- hardening-adapter-tests.md
 
 #### Sprint 1.3: System Hardening Automation
 **Duration**: 1 week
@@ -310,7 +310,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 ---
 
 ## Review Gates Between Phases
-1. **After Phase 1**: Core architecture validated, firewall working
+1. **After Phase 1**: Core architecture validated, hardening flow working
 2. **After Phase 2**: Gateway proxy controller and nginx HTTPS automation working
 3. **After Phase 3**: Multi-platform firewall control proven
 4. **After Phase 4**: Full app deployment pipeline operational

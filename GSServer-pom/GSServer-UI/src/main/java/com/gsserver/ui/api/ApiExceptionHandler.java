@@ -1,5 +1,6 @@
 package com.gsserver.ui.api;
 
+import com.gsserver.ui.hardening.HardeningExecutionException;
 import com.gsserver.ui.hardening.PolicyViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,12 @@ public class ApiExceptionHandler {
   public ResponseEntity<ApiErrorResponse> handlePolicyViolation(PolicyViolationException exception) {
     ApiErrorResponse error = new ApiErrorResponse("POLICY_VIOLATION", exception.getMessage());
     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+  }
+
+  @ExceptionHandler(HardeningExecutionException.class)
+  public ResponseEntity<ApiErrorResponse> handleExecutionFailure(HardeningExecutionException exception) {
+    ApiErrorResponse error = new ApiErrorResponse("EXECUTION_FAILED", exception.getMessage());
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
   }
 
   @ExceptionHandler(Exception.class)

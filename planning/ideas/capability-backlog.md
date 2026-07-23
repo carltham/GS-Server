@@ -126,7 +126,7 @@ capability-backlog.md
 ---
 
 ## Prioritization Notes
-- **Must Have (Phase 1-2)**: Firewall, hardening, basic app deployment
-- **Should Have (Phase 3-4)**: Full app management, proxy control, resource management
-- **Nice to Have (Phase 5+)**: Monitoring dashboards, advanced integrations, ML features
+- **Must Have (Phase 1-2)**: Hardening baseline, server gateway proxy controller, nginx HTTPS control
+- **Should Have (Phase 3-4)**: Firewall control, full app management
+- **Nice to Have (Phase 5+)**: Resource optimization, monitoring dashboards, advanced integrations, ML features
 

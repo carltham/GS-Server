@@ -33,12 +33,12 @@ Do not start a lower boundary until the boundary above has a failing test first.
 
 | Boundary | Scenario Focus | Test Type | Status | Evidence | Notes |
 |---|---|---|---|---|---|
-| Angular UI | Operator triggers hardening action from UI | Component/integration (Angular) |  |  |  |
-| REST API | Hardening endpoint contract and error model | API contract/integration |  |  |  |
-| Controller | Request routed with orchestration only | Unit |  |  |  |
-| Service | Validation, authz, policy, audit trigger | Unit/integration |  |  |  |
-| Linux Adapter | Hardening command execution and exit handling | Integration |  |  |  |
-| Windows Adapter | Hardening command execution and exit handling | Integration |  |  |  |
+| Angular UI | Operator triggers hardening action from UI | Component/integration (Angular) | Complete | tests/ui/tests/phase1/foundation-hardening.spec.ts; Playwright suite 10 passed | Covers success flow and multiple policy-violation messages in Chromium and Firefox. |
+| REST API | Hardening endpoint contract and error model | API contract/integration | Complete | GSServer-pom/GSServer-UI/src/test/java/com/gsserver/ui/hardening/HardeningControllerContractTest.java | Covers accepted contract, malformed JSON 400, and policy-violation 422 payloads. |
+| Controller | Request routed with orchestration only | Unit | Complete | HardeningControllerContractTest with mocked HardeningService | Controller delegates to service and returns contract response without policy logic. |
+| Service | Validation, authz, policy, audit trigger | Unit/integration | Complete (policy baseline) | GSServer-pom/GSServer-UI/src/test/java/com/gsserver/ui/hardening/DefaultHardeningServiceTest.java | Enforces tenant/operator/profile requirements and authorization allow-lists. |
+| Linux Adapter | Hardening command execution and exit handling | Integration | In Progress (wired) | GSServer-pom/GSServer-UI/src/test/java/com/gsserver/ui/hardening/adapter/LinuxHardeningAdapterTest.java; GSServer-pom/GSServer-UI/src/test/java/com/gsserver/ui/hardening/adapter/ProcessHardeningCommandExecutorTest.java | Adapter is wired through real process executor and covered for stdout/stderr/exit-code plus timeout behavior. |
+| Windows Adapter | Hardening command execution and exit handling | Integration | In Progress (wired) | GSServer-pom/GSServer-UI/src/test/java/com/gsserver/ui/hardening/adapter/WindowsHardeningAdapterTest.java; GSServer-pom/GSServer-UI/src/test/java/com/gsserver/ui/hardening/HardeningControllerContractTest.java | Adapter path is wired behind service profile routing; structured EXECUTION_FAILED contract is covered when execution fails. |
 
 ## Mandatory Assertions
 - Angular contains no domain or policy decisions.
@@ -92,9 +92,8 @@ Do not start a lower boundary until the boundary above has a failing test first.
 	2. Created Angular workspace placeholder at `GSServer-pom/GSServer-UI/frontend`.
 	3. Added static host placeholder at `GSServer-pom/GSServer-UI/src/main/resources/static/index.html`.
 - Remaining work:
-	1. Implement Angular app in `frontend`.
-	2. Configure Angular build output to Spring Boot static resources.
-	3. Start Spring Boot app on `BASE_URL` and re-run Playwright.
+	1. Keep WebKit optional unless host dependencies are installed.
+	2. Continue into adapter-level hardening execution tests.
 
 ## Re-run Checklist
 1. `cd tests/ui`
@@ -105,9 +104,9 @@ Do not start a lower boundary until the boundary above has a failing test first.
 6. `npm test`
 
 ## UI Module Bootstrap Checklist (Current)
-1. Spring Boot module scaffold exists at `GSServer-pom/GSServer-UI`.
-2. Angular workspace placeholder exists at `GSServer-pom/GSServer-UI/frontend`.
-3. Configure Angular build output to `GSServer-pom/GSServer-UI/src/main/resources/static`.
-4. Expose Spring Boot app on `http://localhost:8080`.
-5. Verify `/` serves Angular index.
-6. Re-run `tests/ui` Playwright suite.
+1. Spring Boot module scaffold exists at `GSServer-pom/GSServer-UI` (complete).
+2. Angular workspace exists at `GSServer-pom/GSServer-UI/frontend` (complete).
+3. Angular build output is configured to `GSServer-pom/GSServer-UI/src/main/resources/static` (complete).
+4. Spring Boot app is exposed on `http://localhost:8080` for local validation (complete).
+5. Root route serves Angular index from Spring static resources (complete).
+6. Playwright UI suite is green against Spring host (complete).

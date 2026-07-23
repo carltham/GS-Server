@@ -7,13 +7,25 @@ export interface HardeningResponse {
   message: string;
 }
 
+interface HardeningRequest {
+  tenantId: string;
+  requestedBy: string;
+  profile: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class HomeApiService {
+  private readonly defaultRequest: HardeningRequest = {
+    tenantId: 'tenant-a',
+    requestedBy: 'ui-operator',
+    profile: 'baseline'
+  };
+
   constructor(private readonly http: HttpClient) {}
 
   triggerHardening(): Observable<HardeningResponse> {
-    return this.http.post<HardeningResponse>('/api/v1/hardening', {});
+    return this.http.post<HardeningResponse>('/api/v1/hardening', this.defaultRequest);
   }
 }

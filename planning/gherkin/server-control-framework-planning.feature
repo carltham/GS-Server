@@ -11,14 +11,16 @@ Feature: Server Control Framework Planning Overview
 
   # Phase Plan Files
   # - planning/gherkin/phases/phase-1-foundation-and-defence.feature
-  # - planning/gherkin/phases/phase-2-firewall-and-proxy.feature
-  # - planning/gherkin/phases/phase-3-application-management.feature
-  # - planning/gherkin/phases/phase-4-resource-management.feature
-  # - planning/gherkin/phases/phase-5-monitoring-and-access-control.feature
+  # - planning/gherkin/phases/phase-2-server-gateway-proxy-controller.feature
+  # - planning/gherkin/phases/phase-3-firewall-control.feature
+  # - planning/gherkin/phases/phase-4-application-management.feature
+  # - planning/gherkin/phases/phase-5-resource-management.feature
+  # - planning/gherkin/phases/phase-6-monitoring-and-access-control.feature
   # - planning/gherkin/phases/cross-cutting-quality-gates.feature
 
   Scenario: Confirm phase planning files are organized
     Given the phase feature files exist in planning/gherkin/phases
     When the team prepares sprint planning
     Then each phase should be planned from its dedicated file
+    And Phase 2 should focus on server gateway proxy controller delivery for nginx HTTPS control
     And cross-cutting quality gates should apply to all phases

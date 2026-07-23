@@ -33,13 +33,94 @@ class HardeningControllerContractTest {
         .thenReturn(new HardeningResponse("accepted", "Hardening request accepted"));
 
     mockMvc
-        .perform(post("/api/v1/hardening").contentType(MediaType.APPLICATION_JSON).content("{}"))
+      .perform(
+        post("/api/v1/hardening")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content("{" +
+            "\"tenantId\":\"tenant-a\"," +
+            "\"requestedBy\":\"ui-operator\"," +
+            "\"profile\":\"baseline\"}"))
         .andExpect(status().isAccepted())
         .andExpect(jsonPath("$.status").value("accepted"))
         .andExpect(jsonPath("$.message").value("Hardening request accepted"));
 
     verify(hardeningService).triggerHardening(any(HardeningRequest.class));
   }
+
+    @Test
+    void triggerHardeningReturnsStructuredErrorOnPolicyViolation() throws Exception {
+    when(hardeningService.triggerHardening(any(HardeningRequest.class)))
+      .thenThrow(new PolicyViolationException("tenantId is required."));
+
+    mockMvc
+      .perform(
+        post("/api/v1/hardening")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content("{" +
+            "\"tenantId\":\"\"," +
+            "\"requestedBy\":\"ui-operator\"," +
+            "\"profile\":\"baseline\"}"))
+      .andExpect(status().isUnprocessableEntity())
+      .andExpect(jsonPath("$.code").value("POLICY_VIOLATION"))
+      .andExpect(jsonPath("$.message").value("tenantId is required."));
+      }
+
+      @Test
+      void triggerHardeningReturnsStructuredErrorOnUnauthorizedTenant() throws Exception {
+      when(hardeningService.triggerHardening(any(HardeningRequest.class)))
+        .thenThrow(new PolicyViolationException("tenantId is not authorized."));
+
+      mockMvc
+        .perform(
+          post("/api/v1/hardening")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+              "{"
+                + "\"tenantId\":\"tenant-unknown\","
+                + "\"requestedBy\":\"ui-operator\","
+                + "\"profile\":\"baseline\"}"))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code").value("POLICY_VIOLATION"))
+        .andExpect(jsonPath("$.message").value("tenantId is not authorized."));
+      }
+
+      @Test
+      void triggerHardeningReturnsStructuredErrorOnUnauthorizedOperator() throws Exception {
+      when(hardeningService.triggerHardening(any(HardeningRequest.class)))
+        .thenThrow(new PolicyViolationException("requestedBy is not authorized."));
+
+      mockMvc
+        .perform(
+          post("/api/v1/hardening")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+              "{"
+                + "\"tenantId\":\"tenant-a\","
+                + "\"requestedBy\":\"guest\","
+                + "\"profile\":\"baseline\"}"))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code").value("POLICY_VIOLATION"))
+        .andExpect(jsonPath("$.message").value("requestedBy is not authorized."));
+      }
+
+      @Test
+      void triggerHardeningReturnsStructuredErrorOnUnsupportedProfile() throws Exception {
+      when(hardeningService.triggerHardening(any(HardeningRequest.class)))
+        .thenThrow(new PolicyViolationException("profile is not supported."));
+
+      mockMvc
+        .perform(
+          post("/api/v1/hardening")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+              "{"
+                + "\"tenantId\":\"tenant-a\","
+                + "\"requestedBy\":\"ui-operator\","
+                + "\"profile\":\"custom\"}"))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code").value("POLICY_VIOLATION"))
+        .andExpect(jsonPath("$.message").value("profile is not supported."));
+      }
 
   @Test
   void triggerHardeningReturnsStructuredErrorOnMalformedRequest() throws Exception {

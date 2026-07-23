@@ -1,6 +1,6 @@
-phase-4-resource-management.feature
+phase-5-resource-management.feature
 
-Feature: Phase 4 - Resource Management
+Feature: Phase 5 - Resource Management
   As a platform engineering team
   We want to discover and deliver resource management capabilities
   So that monitoring and quota enforcement are controlled and auditable
@@ -22,8 +22,8 @@ Feature: Phase 4 - Resource Management
     Then threshold breaches should trigger alerts
     And quota limits should be enforced without cross-tenant impact
 
-  Scenario: Apply cross-cutting quality gates to Phase 4
-    Given Phase 4 implementation work is in progress
+  Scenario: Apply cross-cutting quality gates to Phase 5
+    Given Phase 5 implementation work is in progress
     When quality-gate validation is executed
     Then all scenarios in cross-cutting-quality-gates.feature should pass
-    And Phase 4 should not be marked complete if any quality gate fails
+    And Phase 5 should not be marked complete if any quality gate fails

@@ -1,3 +1,3 @@
 package com.gsserver.ui.hardening;
 
-public record HardeningRequest() {}
+public record HardeningRequest(String tenantId, String requestedBy, String profile) {}

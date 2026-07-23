@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { HomeApiService } from './home-api.service';
 
@@ -25,10 +26,21 @@ export class HomeComponent {
         this.statusMessage = response.message;
         this.isSubmitting = false;
       },
-      error: () => {
-        this.statusMessage = 'Hardening request failed.';
+      error: (error: unknown) => {
+        this.statusMessage = this.resolveErrorMessage(error);
         this.isSubmitting = false;
       }
     });
+  }
+
+  private resolveErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const errorMessage = (error.error as { message?: unknown } | null)?.message;
+      if (typeof errorMessage === 'string' && errorMessage.trim().length > 0) {
+        return errorMessage;
+      }
+    }
+
+    return 'Hardening request failed.';
   }
 }

@@ -1,6 +1,6 @@
-phase-3-application-management.feature
+phase-4-application-management.feature
 
-Feature: Phase 3 - Application Management
+Feature: Phase 4 - Application Management
   As a platform engineering team
   We want to discover and deliver application management capabilities
   So that service lifecycle and deployments are predictable and safe
@@ -27,8 +27,8 @@ Feature: Phase 3 - Application Management
     Then deployments should complete without manual host configuration
     And rollback should return services to the prior known-good state
 
-  Scenario: Apply cross-cutting quality gates to Phase 3
-    Given Phase 3 implementation work is in progress
+  Scenario: Apply cross-cutting quality gates to Phase 4
+    Given Phase 4 implementation work is in progress
     When quality-gate validation is executed
     Then all scenarios in cross-cutting-quality-gates.feature should pass
-    And Phase 3 should not be marked complete if any quality gate fails
+    And Phase 4 should not be marked complete if any quality gate fails

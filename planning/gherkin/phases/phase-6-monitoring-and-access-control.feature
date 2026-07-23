@@ -1,6 +1,6 @@
-phase-5-monitoring-and-access-control.feature
+phase-6-monitoring-and-access-control.feature
 
-Feature: Phase 5 - Monitoring and Access Control
+Feature: Phase 6 - Monitoring and Access Control
   As a platform engineering team
   We want to discover and deliver monitoring and access-control capabilities
   So that observability and permissions are complete and enforceable
@@ -28,8 +28,8 @@ Feature: Phase 5 - Monitoring and Access Control
     Then access grants and revocations should be fully auditable
     And unauthorized actions should be blocked
 
-  Scenario: Apply cross-cutting quality gates to Phase 5
-    Given Phase 5 implementation work is in progress
+  Scenario: Apply cross-cutting quality gates to Phase 6
+    Given Phase 6 implementation work is in progress
     When quality-gate validation is executed
     Then all scenarios in cross-cutting-quality-gates.feature should pass
-    And Phase 5 should not be marked complete if any quality gate fails
+    And Phase 6 should not be marked complete if any quality gate fails

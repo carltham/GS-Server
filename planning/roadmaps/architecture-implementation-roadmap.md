@@ -59,58 +59,94 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 ---
 
-## Phase 2: Firewall & Proxy Control (Sprint 3-4)
+## Phase 2: Server Gateway Proxy Controller (Sprint 3-4)
 
 ### Goals
-- Complete firewall automation across platforms
-- Implement proxy (nginx/Apache) control
-- Create configuration storage (file or DB)
-- Build CLI for manual triggering
+- Deliver backend controller and service boundaries for gateway proxy control
+- Implement nginx HTTPS proxy control as the first managed gateway capability
+- Validate TLS routing, policy checks, and rollback behavior
+- Build operational runbook and CLI trigger for gateway proxy actions
 
 ### Scrum Sprints
 
-#### Sprint 2.1: Multi-Platform Firewall Adapters
+#### Sprint 2.1: Gateway Proxy Controller Contract
 **Duration**: 1 week
-- [ ] Linux/iptables firewall adapter hardening and completion
-- [ ] Windows/WinRM firewall adapter
-- [ ] Cloud provider adapters (AWS security groups, etc.)
-- [ ] Test on all platforms
+- [ ] Define gateway proxy controller API contract
+- [ ] Define service-layer validation and policy contract
+- [ ] Add controller orchestration tests
+- [ ] Add contract tests for structured success/error responses
+
+**Deliverables**:
+- gateway-proxy-controller-contract.md
+- gateway-proxy-service-contract.md
+- gateway-proxy-controller-tests.md
+- gateway-proxy-api-contract-tests.md
+
+#### Sprint 2.2: NGINX HTTPS Proxy Control
+**Duration**: 1 week
+- [ ] Finalize pseudocode for nginx HTTPS proxy configuration
+- [ ] Implement nginx HTTPS configuration adapter
+- [ ] Validate TLS routing and certificate configuration flow
+- [ ] Validate rollback to last known good configuration
+
+**Deliverables**:
+- nginx-https-proxy-pseudocode.md
+- nginx-adapter.sh
+- nginx-https-proxy-tests.md
+
+#### Sprint 2.3: Gateway Operations and Runbook
+**Duration**: 1 week
+- [ ] Define gateway proxy operation schema and audit fields
+- [ ] Implement file-backed operation state for gateway proxy actions
+- [ ] Add CLI command for gateway proxy apply and rollback
+- [ ] Document operator runbook for nginx HTTPS control
+
+**Deliverables**:
+- gateway-proxy-operation-schema.md
+- gateway-proxy-state-storage.md
+- gateway-proxy-cli.sh
+- nginx-gateway-operations-runbook.md
+
+---
+
+## Phase 3: Firewall Control (Sprint 5-6)
+
+### Goals
+- Deliver backend controller and service boundaries for firewall control
+- Implement multi-platform firewall adapters (Linux, Windows, cloud)
+- Validate policy parity, rollback behavior, and auditable execution results
+
+### Scrum Sprints
+
+#### Sprint 3.1: Firewall Controller Contract
+**Duration**: 1 week
+- [ ] Define firewall controller API contract
+- [ ] Define firewall service validation and policy rules
+- [ ] Add controller orchestration tests
+- [ ] Add contract tests for structured success/error responses
+
+**Deliverables**:
+- firewall-controller-contract.md
+- firewall-service-contract.md
+- firewall-controller-tests.md
+- firewall-api-contract-tests.md
+
+#### Sprint 3.2: Multi-Platform Firewall Adapters
+**Duration**: 1 week
+- [ ] Implement Linux firewall adapter
+- [ ] Implement Windows firewall adapter
+- [ ] Implement one cloud firewall adapter
+- [ ] Validate equivalent policy behavior and rollback across platforms
 
 **Deliverables**:
 - linux-firewall-adapter.sh
 - windows-firewall-adapter.ps1
-- aws-firewall-adapter.sh
+- cloud-firewall-adapter.sh
 - firewall-adapter-tests.md
-
-#### Sprint 2.2: Proxy (nginx/Apache) Adapters
-**Duration**: 1 week
-- [ ] Pseudocode for proxy configuration
-- [ ] nginx configuration adapter
-- [ ] Apache configuration adapter
-- [ ] Test proxy adapters with real apps
-
-**Deliverables**:
-- proxy-pseudocode.md
-- nginx-adapter.sh
-- apache-adapter.sh
-- proxy-tests.md
-
-#### Sprint 2.3: Configuration Storage & CLI
-**Duration**: 1 week
-- [ ] Design configuration schema
-- [ ] File-based storage (git)
-- [ ] Database schema (if applicable)
-- [ ] Basic CLI tool for execution
-
-**Deliverables**:
-- config-schema.md
-- config-storage.md
-- cli-tool.sh
-- cli-usage.md
 
 ---
 
-## Phase 3: Application Deployment (Sprint 5-6)
+## Phase 4: Application Deployment (Sprint 7-8)
 
 ### Goals
 - Service management and deployment
@@ -120,7 +156,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 ### Scrum Sprints
 
-#### Sprint 3.1: Service Management Pseudocode & Adapters
+#### Sprint 4.1: Service Management Pseudocode & Adapters
 **Duration**: 1 week
 - [ ] Define service operations (start, stop, restart, status)
 - [ ] Create systemd adapter (Linux)
@@ -131,7 +167,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - linux-service-adapter.sh
 - windows-service-adapter.ps1
 
-#### Sprint 3.2: Application Deployment
+#### Sprint 4.2: Application Deployment
 **Duration**: 1 week
 - [ ] Define deployment workflows
 - [ ] Create deployment adapter
@@ -146,7 +182,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 ---
 
-## Phase 4: Resource Management (Sprint 7-8)
+## Phase 5: Resource Management (Sprint 9-10)
 
 ### Goals
 - CPU/memory/disk management
@@ -155,7 +191,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 ### Scrum Sprints
 
-#### Sprint 4.1: Resource Monitoring & Adapters
+#### Sprint 5.1: Resource Monitoring & Adapters
 **Duration**: 1 week
 - [ ] Pseudocode for resource queries
 - [ ] Linux (cgroups, /proc) adapters
@@ -167,7 +203,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - linux-resource-adapter.sh
 - windows-resource-adapter.ps1
 
-#### Sprint 4.2: Resource Enforcement & Quotas
+#### Sprint 5.2: Resource Enforcement & Quotas
 **Duration**: 1 week
 - [ ] CPU/memory quota definition
 - [ ] Quota enforcement adapters
@@ -181,7 +217,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 ---
 
-## Phase 5: Monitoring & User Management (Sprint 9-10)
+## Phase 6: Monitoring & User Management (Sprint 11-12)
 
 ### Goals
 - Complete observability
@@ -190,7 +226,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 ### Scrum Sprints
 
-#### Sprint 5.1: Monitoring & Alerting
+#### Sprint 6.1: Monitoring & Alerting
 **Duration**: 1 week
 - [ ] Monitoring pseudocode
 - [ ] Metrics collection adapters
@@ -202,7 +238,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - monitoring-adapter.sh
 - alerting-config.md
 
-#### Sprint 5.2: User & Permission Management
+#### Sprint 6.2: User & Permission Management
 **Duration**: 1 week
 - [ ] User management pseudocode
 - [ ] Account creation/deletion adapters
@@ -216,7 +252,7 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 ---
 
-## Phase 6: Polish & Scaling (Sprint 11+)
+## Phase 7: Polish & Scaling (Sprint 13+)
 
 ### Goals
 - Production readiness
@@ -237,13 +273,14 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 | Phase | Metric | Target |
 |-------|--------|--------|
-| 1 | Firewall fully automated | 100% |
-| 2 | Firewall on 3+ platforms | 3/3 |
-| 2 | Proxy auto-configuration working | 100% |
-| 3 | App deployment automated | 100% |
-| 4 | Resource monitoring 24/7 | 100% |
-| 5 | Full audit trail | 100% |
-| 6 | Documentation complete | 100% |
+| 1 | Core hardening control flow working | 100% |
+| 2 | Gateway proxy controller contract coverage | 100% |
+| 2 | NGINX HTTPS proxy control flow working | 100% |
+| 3 | Firewall policy parity across targets | 100% |
+| 4 | App deployment automated | 100% |
+| 5 | Resource monitoring 24/7 | 100% |
+| 6 | Full audit trail | 100% |
+| 7 | Documentation complete | 100% |
 
 ---
 
@@ -251,7 +288,8 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 - Sprint 1.1 must complete before others
 - Sprints 1.2 & 1.3 can run in parallel
 - Phase 2 depends on Phase 1 completion
-- Phases 3-6 are largely independent after Phase 1
+- Phase 3 depends on Phase 2 completion
+- Phases 4-7 are largely independent after Phase 3
 
 ---
 
@@ -273,8 +311,9 @@ Iterative, phased approach using scrum-like sprints to transform from current st
 
 ## Review Gates Between Phases
 1. **After Phase 1**: Core architecture validated, firewall working
-2. **After Phase 2**: Multi-platform support proven, proxy automation working
-3. **After Phase 3**: Full app deployment pipeline operational
-4. **After Phase 4**: Resource management working reliably
-5. **After Phase 5**: Production monitoring and user management complete
-6. **Phase 6**: Continuous improvement process established
+2. **After Phase 2**: Gateway proxy controller and nginx HTTPS automation working
+3. **After Phase 3**: Multi-platform firewall control proven
+4. **After Phase 4**: Full app deployment pipeline operational
+5. **After Phase 5**: Resource management working reliably
+6. **After Phase 6**: Production monitoring and user management complete
+7. **Phase 7**: Continuous improvement process established

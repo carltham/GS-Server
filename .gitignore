@@ -1,0 +1,31 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Java/Maven
+**/target/
+
+# Node/Angular
+**/node_modules/
+**/.angular/
+**/dist/
+**/.cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env files
+.env
+.env.local
+
+# Playwright artifacts
+tests/ui/playwright-report/
+tests/ui/test-results/
+
+# Angular build output served by Spring Boot (generated)
+GSServer-pom/GSServer-UI/src/main/resources/static/browser/
+GSServer-pom/GSServer-UI/src/main/resources/static/3rdpartylicenses.txt

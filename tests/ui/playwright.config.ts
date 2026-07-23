@@ -1,6 +1,25 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.BASE_URL || 'http://localhost:8080';
+const enableWebkit = process.env.ENABLE_WEBKIT === 'true';
+
+const projects = [
+  {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'] }
+  },
+  {
+    name: 'firefox',
+    use: { ...devices['Desktop Firefox'] }
+  }
+];
+
+if (enableWebkit) {
+  projects.push({
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] }
+  });
+}
 
 export default defineConfig({
   testDir: './tests',
@@ -15,19 +34,6 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'
   },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
-    }
-  ],
+  projects,
   outputDir: 'test-results'
 });

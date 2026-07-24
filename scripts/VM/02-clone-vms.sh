@@ -15,7 +15,8 @@ echo ""
 # Verify base image exists
 if [ ! -f "$VIRT_DIR/$BASE_IMAGE" ]; then
   echo "❌ Error: Base image not found at $VIRT_DIR/$BASE_IMAGE"
-  echo "   Please create base VM first using 02-create-base-vm.sh"
+  echo "   Please create base VM first (manually in virt-manager)"
+  echo "   Storage location: $VIRT_DIR/ubuntu-base.qcow2"
   exit 1
 fi
 
@@ -33,7 +34,7 @@ echo ""
 echo "✅ VM cloning complete!"
 echo ""
 echo "Disk images created:"
-sudo ls -lh "$VIRT_DIR"/*.qcow2 | grep -E "(dev-base|test-baseline|test-hardened|test-isolated)"
+ls -lh "$VIRT_DIR"/*.qcow2 | grep -E "(dev-base|test-baseline|test-hardened|test-isolated)"
 
 echo ""
-echo "Next: Run 03-create-vms.sh to create VM definitions in virt-manager"
+echo "Next: Run 03-create-vms.sh"

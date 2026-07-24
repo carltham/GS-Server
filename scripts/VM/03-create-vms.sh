@@ -20,7 +20,7 @@ for vm_config in "${VMs[@]}"; do
   IFS=':' read -r vm_name vm_desc <<< "$vm_config"
 
   # Check if VM already exists
-  if sudo virsh list --all | grep -q "^ *$vm_name "; then
+  if sudo virsh list --all 2>/dev/null | grep -q "^ *$vm_name "; then
     echo "VM '$vm_name' already exists. Skipping..."
     continue
   fi
@@ -39,7 +39,7 @@ for vm_config in "${VMs[@]}"; do
     --noautoconsole \
     --graphics none \
     --console pty,target_type=serial \
-    2>&1 | grep -E "(Creating|Shutting|Starting|Poking)" || true
+    2>&1 | grep -E "(Creating|Shutting|Starting)" || true
 
   echo "  ✅ Created"
   echo ""
@@ -51,4 +51,4 @@ echo "VMs ready:"
 sudo virsh list --all
 
 echo ""
-echo "Next: Start VMs and run 04-configure-vms.sh"
+echo "Next: Run 04-configure-vms.sh"

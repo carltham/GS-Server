@@ -35,11 +35,11 @@ check_service() {
   local service="$1"
   local name="$2"
 
-  if sudo systemctl is-active --quiet "$service"; then
+  if sudo systemctl is-active --quiet "$service" 2>/dev/null; then
     echo -e "${GREEN}✅${NC} $name is running"
     return 0
   else
-    echo -e "${YELLOW}⚠️${NC}  $name is NOT running (will auto-start)"
+    echo -e "${YELLOW}⚠️${NC}  $name is NOT running"
     WARNINGS=$((WARNINGS + 1))
     return 1
   fi
@@ -50,7 +50,7 @@ check_kvm() {
     echo -e "${GREEN}✅${NC} KVM virtualization supported"
     return 0
   else
-    echo -e "${RED}❌${NC} KVM virtualization NOT supported (CPU must support VT-x or AMD-V)"
+    echo -e "${RED}❌${NC} KVM virtualization NOT supported"
     ERRORS=$((ERRORS + 1))
     return 1
   fi
@@ -61,22 +61,18 @@ check_permissions() {
     echo -e "${GREEN}✅${NC} User has libvirt permissions"
     return 0
   else
-    echo -e "${YELLOW}⚠️${NC}  User NOT in libvirt group"
-    WARNINGS=$((WARNINGS + 1))
+    echo -e "${RED}❌${NC} User NOT in libvirt group"
+    ERRORS=$((ERRORS + 1))
     return 1
   fi
 }
 
 check_disk_space() {
   local required_gb=100
-  local available_gb=$(df /mnt/STORAGE/VM_KVM 2>/dev/null | awk 'NR==2 {print int($4/1024/1024)}' || df ~/ | awk 'NR==2 {print int($4/1024/1024)}')
-
-  if [ -z "$available_gb" ]; then
-    available_gb=$(df / | awk 'NR==2 {print int($4/1024/1024)}')
-  fi
+  local available_gb=$(df /mnt/STORAGE/VM_KVM 2>/dev/null | awk 'NR==2 {print int($4/1024/1024)}' || echo 0)
 
   if [ "$available_gb" -ge "$required_gb" ]; then
-    echo -e "${GREEN}✅${NC} Disk space: ${available_gb}GB available (need ${required_gb}GB)"
+    echo -e "${GREEN}✅${NC} Disk space: ${available_gb}GB available"
     return 0
   else
     echo -e "${RED}❌${NC} Disk space: only ${available_gb}GB available (need ${required_gb}GB)"
@@ -90,10 +86,10 @@ check_ram() {
   local available_gb=$(free -g | awk 'NR==2 {print $2}')
 
   if [ "$available_gb" -ge "$required_gb" ]; then
-    echo -e "${GREEN}✅${NC} RAM: ${available_gb}GB available (need ${required_gb}GB for 4 VMs)"
+    echo -e "${GREEN}✅${NC} RAM: ${available_gb}GB available"
     return 0
   else
-    echo -e "${YELLOW}⚠️${NC}  RAM: only ${available_gb}GB available (recommended ${required_gb}GB for 4 VMs)"
+    echo -e "${YELLOW}⚠️${NC}  RAM: only ${available_gb}GB available (recommended ${required_gb}GB)"
     WARNINGS=$((WARNINGS + 1))
     return 1
   fi
@@ -140,43 +136,18 @@ echo "║                         Summary                                 ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
 
-if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
+if [ $ERRORS -eq 0 ]; then
   echo -e "${GREEN}✅ All requirements satisfied!${NC}"
   echo ""
-  echo "You can proceed with VM setup:"
-  echo "  ./scripts/00-setup-all.sh ~/Downloads/ubuntu-22.04.3-live-server-amd64.iso"
+  echo "Ready to proceed with VM setup."
   exit 0
-
-elif [ $ERRORS -eq 0 ]; then
-  echo -e "${YELLOW}⚠️  All critical requirements met, but ${WARNINGS} warnings:${NC}"
-  echo ""
-  echo "You can proceed, but you may want to fix:"
-  echo "  1. Add user to libvirt group:"
-  echo "     sudo usermod -aG libvirt \$USER"
-  echo "     # Log out and back in for changes to take effect"
-  echo ""
-  echo "  2. Start libvirt daemon:"
-  echo "     sudo systemctl start libvirtd"
-  echo "     sudo systemctl enable libvirtd"
-  echo ""
-  echo "Proceed with setup? (y/n)"
-  read -r response
-  if [ "$response" = "y" ]; then
-    exit 0
-  else
-    exit 1
-  fi
-
 else
   echo -e "${RED}❌ ${ERRORS} critical requirements NOT met${NC}"
   echo ""
-  echo "You need to install/fix the missing components:"
-  echo ""
-  echo "Option 1: Run installation script (recommended)"
-  echo "  ./scripts/00-install-virt-manager.sh"
-  echo ""
-  echo "Option 2: Manual installation"
-  echo "  https://ubuntu.com/server/docs/virtualization-qemu"
+  echo "Fix issues and try again:"
+  echo "  1. Ensure user is in libvirt group: sudo usermod -aG libvirt \$USER"
+  echo "  2. Ensure libvirt daemon is running: sudo systemctl start libvirtd"
+  echo "  3. Ensure /mnt/STORAGE/VM_KVM has 100GB+ space"
   echo ""
   exit 1
 fi

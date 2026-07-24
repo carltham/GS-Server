@@ -22,9 +22,8 @@ EOF
 echo "Network config created at /tmp/gsserver-network.xml"
 
 # Check if network already exists
-if sudo virsh net-list | grep -q gsserver-test; then
+if sudo virsh net-list 2>/dev/null | grep -q gsserver-test; then
   echo "Network 'gsserver-test' already exists. Skipping..."
-  sudo virsh net-list
   exit 0
 fi
 
@@ -42,4 +41,4 @@ sudo virsh net-list
 sudo virsh net-info gsserver-test
 
 echo ""
-echo "Next: Download Ubuntu ISO and run 02-create-base-vm.sh"
+echo "Next: Run 02-clone-vms.sh"

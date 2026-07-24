@@ -37,6 +37,12 @@ Each phase removes one layer of technical complexity. Combined, they deliver the
 - Overall Completion (Phase 1-6): 28%
 - Overall Progress Bar: [#####---------------] 28%
 
+**Documentation & Planning (NEW):**
+- Architecture Documentation: [####################] 100% ✅ (Present-state 7 files, Target-state 7 files, Rules 6 files)
+- Phase 1 Planning & Tasks: [####################] 100% ✅ (Gherkin scenarios + detailed task breakdown)
+- CLAUDE.md & Settings: [####################] 100% ✅ (AI rules, project guidance, enforcement hooks)
+
+**Phase Implementation:**
 - Phase 1 - Foundation and Defence: [###################-] 95% (Deferred — real hardening ops complete, integration pending)
 - Phase 2 - Server Gateway Proxy Controller: [##########----------] 50% (In Progress — controller/models complete, executor wiring needed)
 - Phase 3 - Firewall Control: [--------------------] 0% (Not Started)
@@ -47,13 +53,23 @@ Each phase removes one layer of technical complexity. Combined, they deliver the
 - Cross-cutting Quality Gates: [############--------] 60% (In Progress)
 
 ## Active Execution
-- Now: Phase 1 hardening integration + Phase 2 nginx executor wiring
-- Immediate Focus: 
-  1. Wire HardeningService real adapters into production deployment (currently stubbed)
-  2. Complete gateway nginx adapter (`ProcessNginxCommandExecutor` → `DefaultGatewayProxyService`)
-  3. Implement durable operation-state store (replace in-memory)
-  4. Build Phase 3 firewall control interfaces
-- Next: Phase 3 - Firewall Control (iptables/firewalld automation)
+- **Just Completed (2026-07-24):** 
+  - ✅ Created comprehensive architecture documentation (present-state, target-state, rules)
+  - ✅ Implemented CLAUDE.md with AI rules and project guidance
+  - ✅ Configured .claude/settings.json with enforcement hooks (no stage/commit/push without approval)
+  - ✅ Created Phase 1 detailed task breakdown with implementation code examples
+
+- **Now Ready:** Phase 1 implementation (Secrets Redaction, Audit Logging, Structured Errors)
+  - Task 1.1-1.5: Secrets Redaction (3 days) — ErrorRedactor class, wire into handler, test
+  - Task 2.1-2.4: Audit Logging (5 days) — AuditLog schema, wire into services, export API
+  - Task 3.1-3.4: Structured Errors (3 days) — ErrorResponse schema, ErrorCatalog, handler updates
+
+- **Immediate Next:** Pick Phase 1 work stream and begin implementation
+  - Task 1.1: Identify all secret leakage points (0.5 day)
+  - Task 1.2: Create ErrorRedactor utility class (1 day)
+  - Task 1.3: Wire redaction into ApiExceptionHandler (1 day)
+
+- **Following:** Phase 2 nginx executor wiring + durable operation state
 
 ## Reality Check — implemented vs scaffolding (from deep code inventory)
 

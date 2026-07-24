@@ -12,11 +12,13 @@
       "Bash(grep -r * --include='*.java' --include='*.ts')",
       "Bash(git status)",
       "Bash(git log --oneline)",
-      "Bash(git diff)"
+      "Bash(git diff)",
+      "Bash(git secrets *)"
     ],
     "ask": [
       "Edit(*)",
       "Write(*)",
+      "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(git reset *)"
@@ -29,6 +31,15 @@
   },
   "hooks": {
     "PreToolUse": [
+      {
+        "matcher": "Bash(git add *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '🚫 AI RULE: Never stage files without explicit user request. Check CLAUDE.md.'"
+          }
+        ]
+      },
       {
         "matcher": "Bash(git commit *)",
         "hooks": [

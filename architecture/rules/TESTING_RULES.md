@@ -24,8 +24,12 @@ public void hardeningShouldApplyProfile() {
   Clock clock = Clock.fixed(
     Instant.parse("2026-07-24T10:00:00Z"), UTC);
   
+  // Inject real implementations, not mocks
+  HardeningAdapter realAdapter = new LinuxHardeningAdapter();
+  HardeningRepository realRepo = new FileBasedRepository();
+  
   HardeningService service = new HardeningService(
-    mockAdapter, mockRepo, clock);
+    realAdapter, realRepo, clock);
   
   HardeningResult result = service.harden(request);
   
@@ -178,147 +182,188 @@ doThing
 
 ---
 
-## Rule 7: Test Tier Coverage Targets
+## Rule 7: Test Tier Coverage Targets (Iterative TDD Aligned)
 
-**By Tier:**
+**By Tier (Iterative TDD Strategy):**
 
-| Tier | Target | Scope |
+| Tier | Target | Scope | When to Write |
+|---|---|---|---|
+| **Unit** | 20% (critical only) | Threading, DB transactions, file I/O errors | Only when unit test is faster than integration test |
+| **Integration** | 90%+ coverage | Focused tests at layer boundaries (Iterative TDD) | EVERY feature: pause E2E → write focused IT for failing layer → implement → resume |
+| **E2E** | 90% happy path | Full user flow (Playwright) | START every feature with E2E test |
+| **Security** | 100% required | Cross-tenant denial, secrets redaction, authorization | Every data-access layer boundary |
+
+**By Layer (Iterative TDD Focused Tests):**
+
+| Layer | Strategy | What to Test |
 |---|---|---|
-| **Unit** | 80%+ coverage | Individual methods |
-| **Integration** | 70%+ coverage | Service + Adapter |
-| **E2E** | 90% happy path | Full user flow |
-| **Security** | 100% required | Cross-tenant, secrets |
+| **Handler** | Integration test at Controller → Service boundary | Request validation, error redaction, response structure |
+| **Service** | Integration test at Service → Adapter boundary | Business logic, audit logging, authorization |
+| **Adapter** | Integration test at Adapter → External boundary | Platform execution, error handling, secrets redaction |
+| **Repository** | Unit test ONLY if threading/transaction bugs found | Persistence, I/O, rollback behavior |
 
-**By Layer:**
-
-| Layer | Target | Examples |
-|---|---|---|
-| **Handler** | 100% | Request/response, auth |
-| **Service** | 100% | Business logic |
-| **Adapter** | 100% | Platform execution |
-| **Repository** | 85%+ | Persistence, I/O |
+**Coverage Rationale:**
+- ✅ **90% Integration:** Iterative TDD focused tests cover layer boundaries (fastest, most comprehensive)
+- ✅ **20% Unit:** Only for subtle bugs (threading races, transaction isolation, file descriptor leaks)
+- ✅ **90% E2E:** Playwright tests validate full feature works end-to-end
 
 **Measurement:**
 ```bash
 mvn clean test jacoco:report
 # Report: target/site/jacoco/index.html
+# Target: 90%+ integration coverage, 20% unit for critical paths only
 ```
 
 ---
 
-## Rule 8: Test Organization
+## Rule 8: Test Organization (Iterative TDD Layer Boundaries)
 
-**File structure:**
+**File structure (organized by layer boundary, not component):**
 ```
 src/test/java/com/gsserver/
 ├── hardening/
-│   ├── HardeningHandlerContractTest      (API contract)
-│   ├── DefaultHardeningServiceTest       (business logic)
-│   ├── LinuxHardeningAdapterTest         (execution)
-│   └── FileBasedHardeningStateRepositoryTest
+│   ├── HardeningHandlerIntegrationTest   (Handler → Service boundary, Iterative TDD)
+│   ├── HardeningServiceIntegrationTest   (Service → Adapter boundary, Iterative TDD)
+│   ├── HardeningAdapterIntegrationTest   (Adapter → External boundary, Iterative TDD)
+│   ├── LinuxHardeningAdapterUnitTest     (ONLY if threading/file I/O bugs found)
+│   └── FileBasedStateRepositoryUnitTest  (ONLY if transaction bugs found)
 ├── gateway/
-│   ├── GatewayProxyHandlerContractTest
-│   ├── DefaultGatewayProxyServiceTest
-│   ├── ProcessNginxCommandExecutorTest
-│   └── FileBasedProxyStateRepositoryTest
-└── integration/
-    ├── CrossTenantDenialTests            (security)
-    ├── AuthorizationTests                (security)
-    └── E2EWorkflowTests                  (full flow)
+│   ├── GatewayProxyHandlerIntegrationTest   (Handler → Service boundary)
+│   ├── GatewayProxyServiceIntegrationTest   (Service → Adapter boundary)
+│   ├── NginxExecutorIntegrationTest         (Adapter → External boundary)
+│   └── ProxyStateRepositoryUnitTest         (ONLY if persistence bugs found)
+└── e2e/
+    ├── HardeningE2ETest                     (Playwright, full flow)
+    ├── ProxyE2ETest                         (Playwright, full flow)
+    ├── CrossTenantDenialE2ETest             (Security, Playwright)
+    └── SecretsRedactionE2ETest              (Security, Playwright)
 ```
+
+**Naming convention:**
+- `*IntegrationTest` = Iterative TDD focused test at layer boundary
+- `*UnitTest` = Critical issue only (threading, DB, file I/O)
+- `*E2ETest` = Playwright end-to-end validation
 
 ---
 
-## Rule 9: Contract Tests (API Boundaries)
+## Rule 9: Focused Integration Tests at Handler → Service Boundary
 
-**Rule:** All public endpoints tested for request/response contract.
+**Rule (Iterative TDD):** Handler layer integration tests validate request/response contract AND downstream layer failures.
 
-**Test EVERY status code:**
-- ✅ 200 OK → valid request, correct response
-- ✅ 201 Created → new resource created
-- ✅ 400 Bad Request → invalid input
-- ✅ 401 Unauthorized → no authentication
-- ✅ 403 Forbidden → no authorization
-- ✅ 404 Not Found → resource missing
-- ✅ 422 Unprocessable → validation failed
-- ✅ 500 Server Error → unexpected error
+**Test matrix (using Iterative TDD):**
 
-**Pattern - REQUIRED:**
+| Scenario | What Fails | Iterative TDD Test |
+|---|---|---|
+| Valid request, happy path | (nothing) | Handler accepts → Service executes → returns 200 ✅ |
+| Invalid input | Handler validation | Handler rejects → returns 422 ✅ |
+| Unauthorized user | Authorization | Handler checks auth → returns 403 ✅ |
+| Service throws exception | Service layer | **PAUSE E2E, write focused IT:** Handler catches exception, redacts secrets, returns 500 ✅ |
+| Adapter throws exception | Adapter layer | **Continue E2E → fails at Service boundary, write focused IT:** Service catches, redacts, logs audit ✅ |
+| External system fails (DB/Process) | External system | **Continue E2E → fails at Adapter boundary, write focused IT:** Adapter catches, redacts, returns error ✅ |
+
+**Pattern - Stack-Based TDD at Handler → Service:**
 ```java
+// E2E Playwright test
+test('POST /api/v1/hardening with error → response redacted', async ({ page }) => {
+  const response = await page.request.post('/api/v1/hardening', {
+    data: { serverId: 'invalid' } // will trigger adapter error
+  });
+  expect(response.status()).toBe(500);
+  const body = await response.json();
+  expect(body.message).not.toContain('password'); // redacted
+});
+
+// Pause E2E when it fails at Handler layer
+// Write focused integration test for Handler with REAL Service:
 @Test
-public void validRequest_shouldReturn200() {
-  HardeningRequest req = validRequest();
-  ResponseEntity<?> response = handler.harden(req);
+public void handler_callsRealService_andRedactsResponse() {
+  // Use REAL Service implementation (not mock)
+  HardeningService realService = new DefaultHardeningService(
+    realAdapter, auditLog, clock);
   
-  assertThat(response.getStatusCode()).isEqualTo(OK);
-  assertThat(response.getBody()).isNotNull();
+  HardeningHandler handler = new HardeningHandler(
+    realService, errorRedactor);
+  
+  ResponseEntity<?> response = handler.harden(validRequest());
+  
+  // Assert: handler accepted request, called real service, handled response
+  assertThat(response.getStatusCode()).isEqualTo(200);
+  assertThat(response.getBody()).hasFieldOrProperty("hardeningId");
 }
 
-@Test
-public void invalidInput_shouldReturn422() {
-  HardeningRequest req = new HardeningRequest(null); // invalid
-  ResponseEntity<?> response = handler.harden(req);
-  
-  assertThat(response.getStatusCode())
-    .isEqualTo(UNPROCESSABLE_ENTITY);
-}
+// This test fails because Service throws unhandled exception
+// → PAUSE this test, PUSH onto stack
+// → Write focused test for Service layer with REAL Adapter
+// → Repeat until all layers work
 
-@Test
-public void unauthorizedUser_shouldReturn403() {
-  User unauthorized = createUserWithRole(VIEWER);
-  HardeningRequest req = validRequest();
-  
-  assertThatThrownBy(() -> handler.harden(req))
-    .isInstanceOf(AccessDeniedException.class);
-}
+// Then POP tests back up: fix Adapter to match Service, fix Service to match Handler
 ```
+
+**Key difference from traditional contract tests:**
+- ❌ Old approach: Separate contract test, separate integration test
+- ✅ Iterative TDD: One focused integration test per layer boundary, triggered by E2E failure
 
 ---
 
-## Rule 10: Integration Tests (Service + Adapter)
+## Rule 10: Stack-Based Integration Tests (No Internal Mocks)
 
-**Rule:** Service + Adapter together, Repository mocked.
+**Rule:** Service test calls REAL Adapter (not mocked). Only mock external service providers.
 
-**Pattern - RECOMMENDED:**
+**Pattern - CORRECT:**
 ```java
 @Test
-public void shouldPersistHardeningStateAfterSuccess() {
-  MockedRepository repo = new MockedRepository();
+public void service_callsRealAdapter_andHandlesResult() {
+  // Real internal layers (NEVER mock these)
+  HardeningAdapter realAdapter = new LinuxHardeningAdapter();
+  HardeningRepository realRepo = new FileBasedRepository();
+  
+  // If Adapter calls external API (e.g., cloud provider), mock ONLY that:
+  CloudProviderAPI mockCloudAPI = mock(CloudProviderAPI.class);
+  when(mockCloudAPI.hardening(any())).thenReturn(success());
+  realAdapter.setCloudProvider(mockCloudAPI);  // inject mocked external
+  
   HardeningService service = new HardeningService(
-    realAdapter, repo, clock);
+    realAdapter, realRepo, clock);
   
   HardeningResult result = service.harden(request);
   
-  assertThat(repo.lastSavedState())
-    .hasOperationId(result.operationId())
-    .hasStatus("success");
+  // Assert: Service → Adapter integration works
+  assertThat(result.operationId()).isNotNull();
+  assertThat(realRepo.lastSavedState().operationId())
+    .isEqualTo(result.operationId());
+  // If fails: FIX ADAPTER to match Service's contract
 }
 ```
 
+**Key rule:** Mock only external service providers (third-party APIs). Never mock internal layers (Service, Adapter, Repository).
+
 ---
 
-## Rule 11: E2E Tests (Full Flow)
+## Rule 11: E2E Tests (Full Flow, Stack-Based Authority)
 
-**Rule:** Real services, mocked only external APIs.
+**Rule:** E2E test runs against REAL full stack. E2E test is the ultimate authority—all layers must satisfy it.
 
-**Pattern - RECOMMENDED:**
+**Pattern - CORRECT:**
 ```java
 @Test
 public void hardeningShouldCompleteEndToEnd() {
-  // Real services
-  HardeningService service = real();
-  DefaultGatewayProxyService proxyService = real();
+  // Real services (entire stack)
+  HardeningService service = new DefaultHardeningService(...);
+  DefaultGatewayProxyService proxyService = new DefaultGatewayProxyService(...);
+  HardeningAdapter adapter = new LinuxHardeningAdapter();
+  HardeningRepository repo = new FileBasedRepository();
   
-  // Mock only external
-  MockOsAdapter mockOs = mock();
+  // Only use test doubles for TRUE external (subprocess, network)
+  ProcessSandbox sandbox = new ProcessSandbox();  // Behaves like real OS, but isolated
   
   // Execute full flow
   HardeningResult result = service.harden(...);
   
   // Verify: persisted, response correct, logs captured
   assertThat(result.status()).isEqualTo("success");
-  assertThat(fileSystem.read("operation-state.json"))
-    .contains(result.operationId());
+  assertThat(repo.load(result.operationId()).status())
+    .isEqualTo("success");
+  // E2E test DOMINATES: if it fails, all layers adjust to make it pass
 }
 ```
 

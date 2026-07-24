@@ -5,13 +5,30 @@
 
 ---
 
-## Rule 1: Define-Before-Implementing
+## Rule 1: Test-Driven API Design (Iterative TDD)
 
-**Public endpoints and schemas FIRST, implementation SECOND.**
+**API contract defined and tested via Playwright E2E test FIRST, implementation SECOND.**
 
-- Design API contract before writing handlers
-- Generate API documentation from code (OpenAPI 3.0)
-- Detect breaking changes in CI/CD
+**Pattern (Iterative TDD):**
+1. Write E2E Playwright test that validates the API contract (defines expected response structure)
+2. Run test → **FAILS** (contract not yet implemented)
+3. Implement handlers/services to pass E2E test → **PASSES**
+4. Write focused integration tests at layer boundaries
+5. Generate API documentation from code (OpenAPI 3.0)
+6. Detect breaking changes in CI/CD
+
+**Example:**
+```
+E2E Test: POST /api/v1/hardening → response has {errorId, message, timestamp, correlationId}
+↓
+Fails (handler not implemented)
+↓
+Implement HardeningHandler to return structured response
+↓
+E2E passes
+↓
+Write focused IT: Handler → Service boundary
+```
 
 ---
 

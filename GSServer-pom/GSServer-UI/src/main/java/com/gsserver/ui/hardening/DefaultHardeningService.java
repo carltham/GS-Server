@@ -178,6 +178,76 @@ public class DefaultHardeningService implements HardeningService {
     }
   }
 
+  @Override
+  public HardeningResult harden(HardeningRequest request) {
+    validateRequest(request);
+    String operationId = UUID.randomUUID().toString();
+    String occurredAtUtc = Instant.now().toString();
+
+    try {
+      HardeningExecutionReport report = executeByProfile(request.profile());
+      if (!report.successful()) {
+        HardeningExecutionReport rollbackReport = rollbackByProfile(request.profile());
+        String rollbackMessage = rollbackReport.successful() ? "rollback succeeded" : "rollback failed";
+        operationStateStore.save(
+            new HardeningOperationState(
+                operationId,
+                occurredAtUtc,
+                "failed",
+                request.tenantId(),
+                request.requestedBy(),
+                request.profile(),
+                report.platform(),
+                report.exitCode(),
+                report.timedOut(),
+                rollbackReport.successful() ? "succeeded" : "failed",
+                report.stderr()));
+
+        HardeningResult result = new HardeningResult(
+            operationId,
+            request.tenantId(),
+            request.requestedBy(),
+            request.profile(),
+            false
+        );
+        result.setMessage("Hardening execution failed: " + report.stderr());
+        return result;
+      }
+
+      operationStateStore.save(
+          new HardeningOperationState(
+              operationId,
+              occurredAtUtc,
+              "succeeded",
+              request.tenantId(),
+              request.requestedBy(),
+              request.profile(),
+              report.platform(),
+              report.exitCode(),
+              report.timedOut(),
+              "not-required",
+              "Hardening operation completed successfully"));
+
+      return new HardeningResult(
+          operationId,
+          request.tenantId(),
+          request.requestedBy(),
+          request.profile(),
+          true
+      );
+    } catch (Exception e) {
+      HardeningResult result = new HardeningResult(
+          operationId,
+          request.tenantId(),
+          request.requestedBy(),
+          request.profile(),
+          false
+      );
+      result.setMessage(e.getMessage());
+      return result;
+    }
+  }
+
   private boolean isBlank(String value) {
     return value == null || value.trim().isEmpty();
   }

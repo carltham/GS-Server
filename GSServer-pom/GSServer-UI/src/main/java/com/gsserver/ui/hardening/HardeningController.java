@@ -1,6 +1,7 @@
 package com.gsserver.ui.hardening;
 
 import com.gsserver.ui.common.ApiSuccessResponse;
+import com.gsserver.ui.common.ApiErrorResponse;
 import com.gsserver.ui.common.CorrelationIdUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,13 +30,22 @@ public class HardeningController {
     try {
       // Validate request
       if (request == null || request.tenantId() == null || request.tenantId().isEmpty()) {
-        return ResponseEntity.unprocessableEntity().build();
+        ApiErrorResponse errorResponse = new ApiErrorResponse(
+            "VALIDATION_FAILED",
+            "tenantId is required",
+            correlationId,
+            HardeningController.class.getName()
+        );
+        return ResponseEntity.status(422).body(errorResponse);
       }
 
       HardeningResponse response = hardeningService.triggerHardening(request);
       return ResponseEntity.accepted().body(
           new ApiSuccessResponse(response, correlationId)
       );
+    } catch (Exception e) {
+      // Let GlobalErrorHandler catch and format
+      throw e;
     } finally {
       CorrelationIdUtil.clearFromMdc();
     }

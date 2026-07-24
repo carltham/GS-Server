@@ -6,4 +6,6 @@ public interface HardeningService {
   HardeningResponse triggerHardening(HardeningRequest request);
 
   Optional<HardeningOperationState> getLatestOperationState();
+
+  HardeningResult harden(HardeningRequest request);
 }

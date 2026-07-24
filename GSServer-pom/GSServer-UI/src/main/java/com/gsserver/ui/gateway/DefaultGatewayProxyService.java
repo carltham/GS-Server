@@ -1,5 +1,7 @@
 package com.gsserver.ui.gateway;
 
+import com.gsserver.ui.gateway.adapter.NginxCommandExecutor;
+import com.gsserver.ui.gateway.adapter.NginxConfigurationCommand;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Optional;
@@ -13,9 +15,12 @@ public class DefaultGatewayProxyService implements GatewayProxyService {
   private static final Set<String> ALLOWED_OPERATORS = Set.of("ui-operator", "ui-admin", "thor", "demo");
 
   private final GatewayProxyOperationStateStore operationStateStore;
+  private final NginxCommandExecutor nginxExecutor;
 
-  public DefaultGatewayProxyService(GatewayProxyOperationStateStore operationStateStore) {
+  public DefaultGatewayProxyService(
+      GatewayProxyOperationStateStore operationStateStore, NginxCommandExecutor nginxExecutor) {
     this.operationStateStore = operationStateStore;
+    this.nginxExecutor = nginxExecutor;
   }
 
   @Override
@@ -26,11 +31,22 @@ public class DefaultGatewayProxyService implements GatewayProxyService {
     String occurredAtUtc = Instant.now().toString();
     Optional<GatewayProxyOperationState> previousState = operationStateStore.getLatest();
 
+    NginxConfigurationCommand command =
+        new NginxConfigurationCommand(
+            request.upstreamHost(),
+            request.upstreamPort(),
+            request.tlsEnabled(),
+            request.tlsCertPath(),
+            request.tlsKeyPath());
+
+    var executionResult = nginxExecutor.configure(command);
+
+    String status = executionResult.success() ? "success" : "failed";
     GatewayProxyOperationState state =
         new GatewayProxyOperationState(
             operationId,
             occurredAtUtc,
-            "accepted",
+            status,
             request.tenantId(),
             request.requestedBy(),
             request.upstreamHost(),
@@ -39,10 +55,10 @@ public class DefaultGatewayProxyService implements GatewayProxyService {
             request.tlsCertPath(),
             request.tlsKeyPath(),
             previousState.map(GatewayProxyOperationState::operationId).orElse(null),
-            "Nginx proxy configuration accepted and queued for execution");
+            executionResult.message());
 
     operationStateStore.save(state);
-    return new GatewayProxyResponse("accepted", "Nginx proxy configuration accepted and queued for execution");
+    return new GatewayProxyResponse(status, executionResult.message());
   }
 
   @Override
@@ -62,11 +78,14 @@ public class DefaultGatewayProxyService implements GatewayProxyService {
     String newOperationId = UUID.randomUUID().toString();
     String occurredAtUtc = Instant.now().toString();
 
+    var executionResult = nginxExecutor.rollback(state.tlsCertPath());
+
+    String status = executionResult.success() ? "rollback_success" : "rollback_failed";
     GatewayProxyOperationState rollbackState =
         new GatewayProxyOperationState(
             newOperationId,
             occurredAtUtc,
-            "rollback_accepted",
+            status,
             state.tenantId(),
             state.requestedBy(),
             state.upstreamHost(),
@@ -75,10 +94,10 @@ public class DefaultGatewayProxyService implements GatewayProxyService {
             state.tlsCertPath(),
             state.tlsKeyPath(),
             operationId,
-            "Rollback to previous state accepted and queued for execution");
+            executionResult.message());
 
     operationStateStore.save(rollbackState);
-    return new GatewayProxyResponse("rollback_accepted", "Rollback accepted and queued for execution");
+    return new GatewayProxyResponse(status, executionResult.message());
   }
 
   private void validateRequest(GatewayProxyRequest request) {

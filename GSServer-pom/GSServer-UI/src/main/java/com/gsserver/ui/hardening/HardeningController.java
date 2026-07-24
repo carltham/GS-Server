@@ -1,5 +1,7 @@
 package com.gsserver.ui.hardening;
 
+import com.gsserver.ui.common.ApiSuccessResponse;
+import com.gsserver.ui.common.CorrelationIdUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,14 +21,39 @@ public class HardeningController {
 
   @PostMapping
   @PreAuthorize("hasAnyAuthority('GROUP_HARDENING_OPERATORS','GROUP_HARDENING_ADMINS')")
-  public ResponseEntity<HardeningResponse> triggerHardening(@RequestBody HardeningRequest request) {
-    HardeningResponse response = hardeningService.triggerHardening(request);
-    return ResponseEntity.accepted().body(response);
+  public ResponseEntity<?> triggerHardening(@RequestBody HardeningRequest request) {
+    // Generate correlation ID for this request (for tracing through layers)
+    String correlationId = CorrelationIdUtil.generateCorrelationId();
+    CorrelationIdUtil.setInMdc(correlationId);
+
+    try {
+      // Validate request
+      if (request == null || request.tenantId() == null || request.tenantId().isEmpty()) {
+        return ResponseEntity.unprocessableEntity().build();
+      }
+
+      HardeningResponse response = hardeningService.triggerHardening(request);
+      return ResponseEntity.accepted().body(
+          new ApiSuccessResponse(response, correlationId)
+      );
+    } finally {
+      CorrelationIdUtil.clearFromMdc();
+    }
   }
 
   @GetMapping("/latest")
   @PreAuthorize("hasAnyAuthority('GROUP_HARDENING_OPERATORS','GROUP_HARDENING_ADMINS','GROUP_AUDIT_READERS')")
-  public ResponseEntity<HardeningOperationState> latestHardeningOperationState() {
-    return ResponseEntity.of(hardeningService.getLatestOperationState());
+  public ResponseEntity<?> latestHardeningOperationState() {
+    String correlationId = CorrelationIdUtil.generateCorrelationId();
+    CorrelationIdUtil.setInMdc(correlationId);
+
+    try {
+      return ResponseEntity.of(
+          hardeningService.getLatestOperationState()
+              .map(state -> new ApiSuccessResponse(state, correlationId))
+      );
+    } finally {
+      CorrelationIdUtil.clearFromMdc();
+    }
   }
 }

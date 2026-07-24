@@ -420,3 +420,8 @@ html.theme-dark .login-shell {
     grid-template-columns: 1fr;
   }
 }
+
+/* Keep terminal scrollback from chaining to the page behind the floating windows. */
+.xterm .xterm-viewport {
+  overscroll-behavior: contain;
+}

@@ -7,13 +7,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import java.util.stream.Collectors;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
@@ -21,40 +19,46 @@ import java.util.stream.Collectors;
 public class SecurityConfig {
 
   @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
     http
+        .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
-      .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+      .authorizeHttpRequests(auth -> auth
+          // The terminal WebSocket authorizes itself via a one-time ticket at the handshake.
+          .requestMatchers("/api/v1/terminal/ws").permitAll()
+          // Public login-screen configuration (needed before authenticating).
+          .requestMatchers("/api/v1/auth/config").permitAll()
+          // Protect the data API; the SPA authenticates these calls after login.
+          .requestMatchers("/api/**").authenticated()
+          // The Angular shell (index.html, JS/CSS bundles, deep-link routes) must load
+          // unauthenticated so the login screen can appear when served by the backend.
+          .anyRequest().permitAll())
         .httpBasic(Customizer.withDefaults());
 
     return http.build();
   }
 
   @Bean
-    AuthenticationProvider authenticationProvider(
-      UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+  JsonUserStore jsonUserStore(
+      SecurityUsersProperties securityUsersProperties, PasswordEncoder passwordEncoder) {
+    return new JsonUserStore(securityUsersProperties, passwordEncoder);
+  }
+
+  @Bean
+  UserDetailsService userDetailsService(JsonUserStore jsonUserStore) {
+    return new JsonUserDetailsService(jsonUserStore);
+  }
+
+  @Bean
+  AuthenticationProvider authenticationProvider(
+      UserDetailsService userDetailsService,
+      PasswordEncoder passwordEncoder,
+      SecurityUsersProperties securityUsersProperties) {
     LocalhostThorAuthenticationProvider provider = new LocalhostThorAuthenticationProvider();
     provider.setUserDetailsService(userDetailsService);
     provider.setPasswordEncoder(passwordEncoder);
+    provider.setThorLoginEnabled(securityUsersProperties.isThorLoginEnabled());
     return provider;
-    }
-
-    @Bean
-  UserDetailsService userDetailsService(
-      PasswordEncoder passwordEncoder, SecurityUsersProperties securityUsersProperties) {
-    if (securityUsersProperties.getUsers().isEmpty()) {
-      throw new IllegalStateException("No users configured under gsserver.security.users");
-    }
-
-    return new InMemoryUserDetailsManager(
-        securityUsersProperties.getUsers().stream()
-            .map(
-                user ->
-                    User.withUsername(user.getUsername())
-                        .password(passwordEncoder.encode(user.getPassword()))
-                        .authorities(user.getAuthorities().toArray(new String[0]))
-                        .build())
-            .collect(Collectors.toList()));
   }
 
   @Bean

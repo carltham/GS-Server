@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class SpaForwardController {
 
-  @GetMapping({"/hardening", "/proxy"})
+  // Angular client-side routes that must serve the SPA shell on a direct load/refresh.
+  @GetMapping({"/hardening", "/proxy", "/proxy/install", "/users"})
   public String forward() {
     return "forward:/";
   }

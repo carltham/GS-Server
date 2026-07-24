@@ -1,18 +1,72 @@
 <section class="card stack-gap" style="margin-top: 16px;">
   <h2>Proxy Installation Procedure</h2>
+
+  <div class="terminal-user-row">
+    <label for="terminalUser">Open terminal as user:</label>
+    <input
+      id="terminalUser"
+      type="text"
+      name="terminalUser"
+      autocomplete="off"
+      placeholder="root"
+      [(ngModel)]="terminalUser"
+      [disabled]="terminalVisible" />
+    <span class="terminal-user-hint">
+      Runs a login shell as this user (via <code>sudo</code>; you'll be prompted for the password).
+      Leave blank for the server's own user. Close the terminal to change it.
+    </span>
+  </div>
+
   <p *ngIf="guide">Operating system detected: <strong>{{ guide.operatingSystem }}</strong></p>
   <p *ngIf="guideError.length > 0">{{ guideError }}</p>
 
-  <ol *ngIf="guide && guide.operatingSystem === 'Linux'">
-    <li>
-      <a href="#" (click)="$event.preventDefault(); startNginxInstallation()">
-        Install NGINX using the guided terminal command sequence.
-      </a>
-    </li>
-    <li>Enable the service at boot and start it now.</li>
-    <li>Check service status and confirm the binary path.</li>
-    <li>Return to Proxy Management and re-run detection.</li>
-  </ol>
+  <div *ngIf="guide && guide.operatingSystem === 'Linux'" class="install-guide">
+    <p>
+      Use the
+      <a href="#" (click)="$event.preventDefault(); selectCommandGroup('all')">guided terminal</a>
+      below — every command is one click, and you can answer <code>sudo</code> password prompts live.
+      Click a step heading to load just that step's commands.
+    </p>
+
+    <h3>
+      <a href="#" (click)="$event.preventDefault(); selectCommandGroup('install')">1. Install NGINX</a>
+    </h3>
+    <ol>
+      <li>Update package lists: <code>sudo apt update</code></li>
+      <li>Install the server: <code>sudo apt install -y nginx</code></li>
+      <li>Enable at boot and start now: <code>sudo systemctl enable nginx</code>, then <code>sudo systemctl start nginx</code></li>
+      <li>Confirm it is running: <code>sudo systemctl status nginx</code></li>
+    </ol>
+
+    <h3>
+      <a href="#" (click)="$event.preventDefault(); selectCommandGroup('proxy')">2. Configure the reverse proxy</a>
+    </h3>
+    <ol>
+      <li>
+        Create the site file <code>/etc/nginx/sites-available/gsserver-proxy</code> with the server
+        block below. Replace <code>UPSTREAM_HOST</code> and <code>UPSTREAM_PORT</code> with the
+        upstream target you set on the <a routerLink="/proxy">Proxy Management</a> page.
+        <pre class="nginx-config">server {{ '{' }}
+    listen 80;
+    server_name _;
+
+    location / {{ '{' }}
+        proxy_pass http://UPSTREAM_HOST:UPSTREAM_PORT;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    {{ '}' }}
+{{ '}' }}</pre>
+        Tip: from the terminal you can write it in one step —
+        <code>sudo nano /etc/nginx/sites-available/gsserver-proxy</code>.
+      </li>
+      <li>Enable the site: <code>sudo ln -sf /etc/nginx/sites-available/gsserver-proxy /etc/nginx/sites-enabled/gsserver-proxy</code></li>
+      <li>Validate the configuration: <code>sudo nginx -t</code></li>
+      <li>Apply it without downtime: <code>sudo systemctl reload nginx</code></li>
+      <li>Return to <a routerLink="/proxy">Proxy Management</a> and re-run detection to confirm the proxy is live.</li>
+    </ol>
+  </div>
 
   <ol *ngIf="guide && guide.operatingSystem !== 'Linux'">
     <li *ngFor="let step of guide.steps">{{ step }}</li>
@@ -34,38 +88,146 @@
   <header class="floating-terminal-header" (mousedown)="onTerminalHeaderMouseDown($event)">
     <strong>Proxy Install Terminal</strong>
     <div class="floating-terminal-header-actions">
-      <button mat-button type="button" (click)="clearTerminalOutput()">Clear</button>
+      <button mat-button type="button" [disabled]="terminalBlocked" (click)="clearTerminal()">Clear</button>
       <button mat-button type="button" (click)="closeTerminal()">Close</button>
     </div>
   </header>
 
   <div class="floating-terminal-body">
-    <div class="floating-terminal-required" *ngIf="guide && guide.commands.length > 0">
-      <strong>Required commands</strong>
+    <p class="floating-terminal-config-hint">
+      ℹ️ Interactive shell running as <code>{{ terminalUser || 'server user' }}</code>. Answer any
+      <code>sudo</code>/password prompt live, just like a native terminal.
+    </p>
+
+    <div class="floating-terminal-required" *ngIf="guide && displayedCommands.length > 0 && !isConfigMode">
+      <strong>Required commands — {{ commandGroupLabel() }}</strong>
       <div class="floating-terminal-command-list">
         <button
           mat-stroked-button
           type="button"
-          *ngFor="let command of guide.commands"
-          [disabled]="!isCommandSelectable(command)"
+          *ngFor="let command of displayedCommands"
+          [disabled]="terminalBlocked"
           (click)="useCommand(command)">
           {{ command }} ({{ commandStateLabel(command) }})
         </button>
       </div>
     </div>
 
-    <textarea class="floating-terminal-output" [value]="terminalOutput" readonly></textarea>
-
-    <div class="floating-terminal-controls">
-      <input
-        matInput
-        type="text"
-        placeholder="Type command"
-        [(ngModel)]="terminalCommand"
-        (keydown.enter)="runCurrentCommand()" />
-      <button mat-flat-button color="primary" type="button" [disabled]="terminalBusy" (click)="runCurrentCommand()">
-        {{ terminalBusy ? 'Running...' : 'Run' }}
+    <div class="floating-terminal-editorlaunch" *ngIf="isConfigMode">
+      <button
+        *ngIf="!sudoAuthenticated"
+        mat-flat-button
+        color="accent"
+        type="button"
+        [disabled]="!terminalReady || terminalBlocked || !hasValidUser"
+        (click)="requestSudoAuth()">
+        Authenticate sudo
       </button>
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        [disabled]="!sudoAuthenticated"
+        (click)="openConfigEditor()">
+        ✎ Edit site file
+      </button>
+      <button
+        mat-stroked-button
+        color="primary"
+        type="button"
+        [disabled]="!sudoAuthenticated"
+        (click)="enableSiteAndReload()">
+        Enable &amp; reload
+      </button>
+      <span class="floating-terminal-editorlaunch-hint">
+        <ng-container *ngIf="sudoAuthenticated">sudo authenticated — open the site-file editor.</ng-container>
+        <ng-container *ngIf="!sudoAuthenticated">
+          When the terminal is at a prompt, click <strong>Authenticate sudo</strong> and answer the
+          password prompt to enable editing.
+        </ng-container>
+      </span>
+    </div>
+
+    <div class="floating-terminal-configsteps" *ngIf="isConfigMode">
+      <strong>After writing the file, activate it</strong>
+      <div class="floating-terminal-configstep" *ngFor="let step of proxyConfigSteps">
+        <span class="configstep-label">{{ step.label }}:</span>
+        <button
+          mat-stroked-button
+          type="button"
+          [disabled]="terminalBlocked"
+          (click)="useCommand(step.command)">
+          {{ step.command }}
+        </button>
+      </div>
+    </div>
+
+    <gs-web-terminal
+      class="floating-terminal-xterm"
+      [runAsUser]="terminalUser"
+      (blockedChange)="onTerminalBlocked($event)"
+      (readyChange)="onTerminalReady($event)"
+      (sentinelSeen)="onSudoAuthenticated()"></gs-web-terminal>
+  </div>
+</section>
+
+<section
+  *ngIf="editorVisible"
+  class="floating-editor"
+  [style.left.px]="editorLeft"
+  [style.top.px]="editorTop">
+  <header class="floating-editor-header" (mousedown)="onEditorHeaderMouseDown($event)">
+    <strong>Edit site file — {{ siteFilePath }}</strong>
+    <div class="floating-editor-header-actions">
+      <button mat-button type="button" [disabled]="editorLoading" (click)="resetConfigEditor()">Reload</button>
+      <button mat-button type="button" (click)="closeConfigEditor()">Close</button>
+    </div>
+  </header>
+
+  <div class="floating-editor-body">
+    <p class="floating-editor-hint" [class.exists]="editorFileExists">
+      <span *ngIf="editorStatus">{{ editorStatus }}</span>
+      Editing is unlocked by authenticating sudo once in the terminal; <strong>Write to server</strong>
+      then saves via <code>sudo tee {{ siteFilePath }}</code>.
+    </p>
+
+    <p class="floating-editor-userstate" [class.blocked]="!hasValidUser || terminalBlocked || (terminalReady && !sudoAuthenticated)">
+      <ng-container *ngIf="!hasValidUser">
+        ⚠️ Set a valid run-as user at the top of the page before editing the file.
+      </ng-container>
+      <ng-container *ngIf="hasValidUser && terminalBlocked">
+        ⚠️ The terminal user <code>{{ terminalUser }}</code> was rejected — choose a valid user.
+      </ng-container>
+      <ng-container *ngIf="hasValidUser && !terminalBlocked && !terminalReady">
+        ⏳ Connecting the terminal as <code>{{ terminalUser }}</code>…
+      </ng-container>
+      <ng-container *ngIf="hasValidUser && terminalReady && !terminalBlocked && !sudoAuthenticated">
+        🔒 Enter <code>{{ terminalUser }}</code>'s sudo password in the terminal to unlock the editor.
+        <button mat-stroked-button type="button" class="editor-auth-btn" (click)="requestSudoAuth()">
+          Re-prompt sudo
+        </button>
+      </ng-container>
+      <ng-container *ngIf="canWriteConfig">
+        ✅ sudo authenticated as <code>{{ terminalUser }}</code> — edit and write freely.
+      </ng-container>
+    </p>
+
+    <textarea
+      class="floating-editor-textarea"
+      spellcheck="false"
+      [disabled]="editorLoading || !sudoAuthenticated"
+      [(ngModel)]="editorContent"
+      aria-label="nginx site file content"></textarea>
+    <div class="floating-editor-actions">
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        [disabled]="!canWriteConfig"
+        (click)="saveConfigFile()">
+        Write to server
+      </button>
+      <button mat-stroked-button type="button" (click)="closeConfigEditor()">Cancel</button>
     </div>
   </div>
 </section>

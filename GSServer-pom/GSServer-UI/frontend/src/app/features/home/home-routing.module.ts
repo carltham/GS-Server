@@ -5,11 +5,16 @@ import { HomeComponent } from './home.component';
 import { HardeningComponent } from './hardening.component';
 import { ProxyComponent } from './proxy.component';
 import { ProxyInstallationComponent } from './proxy-installation.component';
+import { UsersComponent } from './users.component';
 
 const routes: Routes = [
   {
     path: '',
     component: HomeComponent
+  },
+  {
+    path: 'users',
+    component: UsersComponent
   },
   {
     path: 'hardening',

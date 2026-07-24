@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 import { AuthService } from './core/auth.service';
 import { ThemeService } from './core/theme.service';
@@ -12,12 +13,30 @@ export class AppComponent {
   passwordInput = '';
   loginError = '';
   isSubmitting = false;
+  thorLoginEnabled = false;
 
   constructor(
     private readonly authService: AuthService,
-    private readonly themeService: ThemeService
+    private readonly themeService: ThemeService,
+    private readonly http: HttpClient
   ) {
     this.themeService.initialize();
+
+    // Passwordless Thor login is only offered when the server explicitly enables it.
+    this.http
+      .get<{ thorLoginEnabled: boolean }>('/api/v1/auth/config')
+      .subscribe({
+        next: (config) => (this.thorLoginEnabled = config.thorLoginEnabled),
+        error: () => (this.thorLoginEnabled = false)
+      });
+
+    // A `?logout=true` link logs the user out and redirects to the app root.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('logout') === 'true') {
+      this.authService.logout();
+      window.history.replaceState({}, '', '/');
+    }
+
     this.authService.initialize().subscribe();
   }
 
@@ -27,6 +46,11 @@ export class AppComponent {
 
   get username(): string {
     return this.authService.username;
+  }
+
+  get canManageUsers(): boolean {
+    const authorities = this.authService.authorities;
+    return authorities.includes('GROUP_HARDENING_ADMINS') || authorities.includes('GROUP_SUPERUSER');
   }
 
   get darkThemeEnabled(): boolean {

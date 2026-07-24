@@ -1,0 +1,26 @@
+[ {
+  "username" : "demo",
+  "passwordHash" : "{bcrypt}$2a$10$FPzJrRnNQq.roVka17lvAOedJkptYeRise4ItywU7LeB75/4BA1H6",
+  "authorities" : [ "GROUP_HARDENING_OPERATORS" ],
+  "enabled" : true
+}, {
+  "username" : "ui-operator",
+  "passwordHash" : "{bcrypt}$2a$10$XacOW1bdErfYCT2str419OpGSfg2g97axRuYgXBqgsFg3T8YcVbWe",
+  "authorities" : [ "GROUP_HARDENING_OPERATORS" ],
+  "enabled" : true
+}, {
+  "username" : "ui-admin",
+  "passwordHash" : "{bcrypt}$2a$10$DlZlJnzwwcIRAIt07XlS2eFyT4jS5WRojWEqRu3OM5fgS04/IVY/S",
+  "authorities" : [ "GROUP_HARDENING_ADMINS" ],
+  "enabled" : true
+}, {
+  "username" : "ui-auditor",
+  "passwordHash" : "{bcrypt}$2a$10$h1Foqt7MXzBFRAwLk5HEhug1Al02LP3c1GV7KJftCd.LWsAv9EyF.",
+  "authorities" : [ "GROUP_AUDIT_READERS" ],
+  "enabled" : true
+}, {
+  "username" : "thor",
+  "passwordHash" : "{bcrypt}$2a$10$7MVS1Xs3Xq82J1jcVQjNeujReaMBO9BaE.RnIb8Xk3axdNggwYZkO",
+  "authorities" : [ "GROUP_HARDENING_ADMINS", "GROUP_SUPERUSER" ],
+  "enabled" : true
+} ]

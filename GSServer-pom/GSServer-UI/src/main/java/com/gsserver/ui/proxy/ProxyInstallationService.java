@@ -1,41 +1,74 @@
 package com.gsserver.ui.proxy;
 
-import com.gsserver.ui.hardening.PolicyViolationException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProxyInstallationService {
-  private static final int COMMAND_TIMEOUT_SECONDS = 90;
-  private static final int MAX_OUTPUT_CHARS = 16_000;
+  private static final Logger logger = LoggerFactory.getLogger(ProxyInstallationService.class);
+  private static final Path SITE_FILE_PATH =
+      Path.of("/etc/nginx/sites-available/gsserver-proxy");
 
-  private static final Set<String> ALLOWED_EXECUTABLES =
-      Set.of(
-          "apt",
-          "apt-get",
-          "dnf",
-          "yum",
-          "pacman",
-          "zypper",
-          "systemctl",
-          "service",
-          "nginx",
-          "apache2ctl",
-          "httpd",
-          "which",
-          "cat",
-          "ls",
-          "lsb_release",
-          "ps");
+  private final ServerPortHolder serverPortHolder;
+
+  public ProxyInstallationService(ServerPortHolder serverPortHolder) {
+    this.serverPortHolder = serverPortHolder;
+  }
+
+  /**
+   * Return the reverse-proxy site file for editing: the existing content when the file is present
+   * and readable, otherwise a valid template that proxies to this application.
+   */
+  public SiteFileResponse getSiteFile() {
+    if (Files.isRegularFile(SITE_FILE_PATH)) {
+      try {
+        String content = Files.readString(SITE_FILE_PATH);
+        return new SiteFileResponse(SITE_FILE_PATH.toString(), true, content);
+      } catch (IOException e) {
+        // File exists but the server user cannot read it (e.g. restrictive perms); offer the
+        // template so the operator can still (re)write it through the terminal.
+        logger.info("Site file exists but could not be read: {}", e.getMessage());
+        return new SiteFileResponse(SITE_FILE_PATH.toString(), true, defaultSiteTemplate());
+      }
+    }
+    return new SiteFileResponse(SITE_FILE_PATH.toString(), false, defaultSiteTemplate());
+  }
+
+  /** A valid nginx reverse-proxy config that fronts this application (incl. WebSocket upgrade). */
+  private String defaultSiteTemplate() {
+    int port = serverPortHolder.getPort();
+    return """
+        # Reverse proxy for the GSServer UI (this application)
+        server {
+            listen 80;
+            server_name _;
+
+            location /serveradmin {
+                proxy_pass http://127.0.0.1:%d;
+
+                # Preserve client information
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+
+                # Required for the interactive terminal WebSocket
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_read_timeout 3600s;
+            }
+        }
+        """
+        .formatted(port);
+  }
 
   public ProxyInstallGuideResponse getInstallGuide() {
     String osName = System.getProperty("os.name", "unknown");
@@ -78,48 +111,9 @@ public class ProxyInstallationService {
         List.of());
   }
 
-  public TerminalCommandResponse executeCommand(TerminalCommandRequest request) {
-    if (request == null || isBlank(request.command())) {
-      throw new PolicyViolationException("Command is required.");
-    }
-
-    String command = request.command().trim();
-    validateCommand(command);
-
-    List<String> tokens = tokenize(command);
-    Instant startedAt = Instant.now();
-
-    Process process;
-    try {
-      process = new ProcessBuilder(tokens).start();
-    } catch (IOException exception) {
-      throw new PolicyViolationException("Failed to start command: " + exception.getMessage());
-    }
-
-    boolean finished;
-    try {
-      finished = process.waitFor(COMMAND_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-    } catch (InterruptedException exception) {
-      Thread.currentThread().interrupt();
-      throw new PolicyViolationException("Command execution interrupted.");
-    }
-
-    if (!finished) {
-      process.destroyForcibly();
-      long durationMs = Duration.between(startedAt, Instant.now()).toMillis();
-      return new TerminalCommandResponse(command, 124, "", "Command timed out.", durationMs);
-    }
-
-    int exitCode = process.exitValue();
-    long durationMs = Duration.between(startedAt, Instant.now()).toMillis();
-    String stdout = readStream(process.getInputStream());
-    String stderr = readStream(process.getErrorStream());
-
-    return new TerminalCommandResponse(command, exitCode, limitOutput(stdout), limitOutput(stderr), durationMs);
-  }
-
   private List<String> linuxCommands() {
     List<String> commands = new ArrayList<>();
+    // 1. Install NGINX
     commands.add("cat /etc/os-release");
     commands.add("which apt");
     commands.add("sudo apt update");
@@ -127,74 +121,10 @@ public class ProxyInstallationService {
     commands.add("sudo systemctl enable nginx");
     commands.add("sudo systemctl start nginx");
     commands.add("sudo systemctl status nginx");
-    commands.add("ps aux");
+    // 2. Enable and reload the reverse-proxy site (after creating the config, see the guide)
+    commands.add("sudo ln -sf /etc/nginx/sites-available/gsserver-proxy /etc/nginx/sites-enabled/gsserver-proxy");
+    commands.add("sudo nginx -t");
+    commands.add("sudo systemctl reload nginx");
     return commands;
-  }
-
-  private void validateCommand(String command) {
-    if (command.length() > 200) {
-      throw new PolicyViolationException("Command length exceeds allowed limit.");
-    }
-
-    if (command.contains("&&")
-        || command.contains("||")
-        || command.contains(";")
-        || command.contains("|")
-        || command.contains("`")
-        || command.contains(">")
-        || command.contains("<")
-        || command.contains("$")
-        || command.contains("\n")) {
-      throw new PolicyViolationException("Command contains unsupported shell operators.");
-    }
-
-    List<String> tokens = tokenize(command);
-    if (tokens.isEmpty()) {
-      throw new PolicyViolationException("Command is required.");
-    }
-
-    int executableIndex = 0;
-    if ("sudo".equals(tokens.get(0))) {
-      executableIndex = 1;
-    }
-
-    if (executableIndex >= tokens.size()) {
-      throw new PolicyViolationException("Command executable is missing.");
-    }
-
-    String executable = tokens.get(executableIndex);
-    if (!ALLOWED_EXECUTABLES.contains(executable)) {
-      throw new PolicyViolationException("Command is not allowed in installation terminal.");
-    }
-  }
-
-  private List<String> tokenize(String command) {
-    String[] rawTokens = command.split("\\s+");
-    List<String> tokens = new ArrayList<>();
-    for (String token : rawTokens) {
-      if (!token.isBlank()) {
-        tokens.add(token);
-      }
-    }
-    return tokens;
-  }
-
-  private String readStream(InputStream stream) {
-    try {
-      return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-    } catch (IOException exception) {
-      return "Failed to read process output: " + exception.getMessage();
-    }
-  }
-
-  private String limitOutput(String output) {
-    if (output == null || output.length() <= MAX_OUTPUT_CHARS) {
-      return output == null ? "" : output;
-    }
-    return output.substring(0, MAX_OUTPUT_CHARS) + "\n[output truncated]";
-  }
-
-  private boolean isBlank(String value) {
-    return value == null || value.trim().isEmpty();
   }
 }

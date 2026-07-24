@@ -1,0 +1,70 @@
+<section class="card stack-gap" style="margin-top: 16px;">
+  <h2>User Management</h2>
+  <p class="users-subtitle">
+    {{ isSuperadmin ? 'Superadmin — you can manage all accounts and roles.' : 'Admin — you can manage non-admin accounts only.' }}
+  </p>
+
+  <p *ngIf="error" class="users-error">{{ error }}</p>
+  <p *ngIf="info" class="users-info">{{ info }}</p>
+
+  <!-- Create user -->
+  <div class="users-create">
+    <strong>Add user</strong>
+    <div class="users-create-row">
+      <input type="text" placeholder="username" name="newUsername" [(ngModel)]="newUsername" autocomplete="off" />
+      <input type="password" placeholder="password" name="newPassword" [(ngModel)]="newPassword" autocomplete="new-password" />
+      <label class="users-check">
+        <input type="checkbox" [(ngModel)]="newEnabled" name="newEnabled" /> enabled
+      </label>
+      <button mat-flat-button color="primary" type="button" (click)="createUser()">Create</button>
+    </div>
+    <div class="users-roles">
+      <label *ngFor="let role of roles" class="users-check" [class.disabled]="!canAssign(role)">
+        <input
+          type="checkbox"
+          [checked]="newAuthorities.includes(role.authority)"
+          [disabled]="!canAssign(role)"
+          (change)="toggleNewRole(role.authority)" />
+        {{ role.label }}
+      </label>
+    </div>
+  </div>
+
+  <!-- Existing users -->
+  <div class="users-table-wrap">
+    <table class="users-table" *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th *ngFor="let role of roles">{{ role.label }}</th>
+          <th>Enabled</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users" [class.unmanageable]="!canManage(user)">
+          <td class="users-name">{{ user.username }}</td>
+          <td *ngFor="let role of roles" class="users-cell-center">
+            <input
+              type="checkbox"
+              [checked]="hasRole(user, role.authority)"
+              [disabled]="user.busy || !canManage(user) || !canAssign(role)"
+              (change)="toggleRole(user, role.authority)" />
+          </td>
+          <td class="users-cell-center">
+            <input
+              type="checkbox"
+              [(ngModel)]="user.enabled"
+              [disabled]="user.busy || !canManage(user)" />
+          </td>
+          <td class="users-actions">
+            <button mat-stroked-button type="button" [disabled]="user.busy || !canManage(user)" (click)="save(user)">Save</button>
+            <button mat-stroked-button type="button" [disabled]="user.busy || !canManage(user)" (click)="resetPassword(user)">Reset pw</button>
+            <button mat-stroked-button color="warn" type="button" [disabled]="user.busy || !canManage(user)" (click)="remove(user)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="loading">Loading users…</p>
+  </div>
+</section>

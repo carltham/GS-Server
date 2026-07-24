@@ -18,9 +18,10 @@
       <a routerLink="/" routerLinkActive="tab-active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <a routerLink="/hardening" routerLinkActive="tab-active">Hardening</a>
       <a routerLink="/proxy" routerLinkActive="tab-active">Proxy</a>
+      <a *ngIf="canManageUsers" routerLink="/users" routerLinkActive="tab-active">Users</a>
     </nav>
 
-    <button type="button" (click)="logout()" style="margin-top: 12px;">Log out</button>
+    <a href="/?logout=true" style="display: inline-block; margin-top: 12px;">Log out</a>
   </section>
 
   <router-outlet></router-outlet>
@@ -60,7 +61,12 @@
           <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting">
             {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
           </button>
-          <button mat-stroked-button type="button" (click)="loginAsThor()" [disabled]="isSubmitting">
+          <button
+            *ngIf="thorLoginEnabled"
+            mat-stroked-button
+            type="button"
+            (click)="loginAsThor()"
+            [disabled]="isSubmitting">
             Thor Login
           </button>
         </div>

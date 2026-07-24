@@ -1,3 +1,8 @@
+# Progress Snapshot
+# Status: In Progress - Controller/Service Contract Scaffolding Complete
+# Completion: 25%
+# Progress: [#####---------------] 25%
+
 phase-2-server-gateway-proxy-controller.feature
 
 Feature: Phase 2 - Server Gateway Proxy Controller

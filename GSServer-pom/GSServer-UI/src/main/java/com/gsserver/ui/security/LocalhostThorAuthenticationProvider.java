@@ -1,8 +1,5 @@
 package com.gsserver.ui.security;
 
-import jakarta.servlet.http.HttpServletRequest;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -14,12 +11,23 @@ public class LocalhostThorAuthenticationProvider extends DaoAuthenticationProvid
 
   private static final String THOR_USERNAME = "thor";
 
+  /** Master switch for passwordless thor login; the localhost origin check still gates every login. */
+  private boolean thorLoginEnabled = true;
+
+  public void setThorLoginEnabled(boolean thorLoginEnabled) {
+    this.thorLoginEnabled = thorLoginEnabled;
+  }
+
   @Override
   protected void additionalAuthenticationChecks(
       UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) {
     if (!THOR_USERNAME.equals(userDetails.getUsername())) {
       super.additionalAuthenticationChecks(userDetails, authentication);
       return;
+    }
+
+    if (!thorLoginEnabled) {
+      throw new BadCredentialsException("thor passwordless login is disabled.");
     }
 
     String presentedPassword =
@@ -37,17 +45,6 @@ public class LocalhostThorAuthenticationProvider extends DaoAuthenticationProvid
     if (!(RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes attributes)) {
       return false;
     }
-
-    HttpServletRequest request = attributes.getRequest();
-    String remoteAddress = request.getRemoteAddr();
-    if (remoteAddress == null || remoteAddress.isBlank()) {
-      return false;
-    }
-
-    try {
-      return InetAddress.getByName(remoteAddress).isLoopbackAddress();
-    } catch (UnknownHostException exception) {
-      return false;
-    }
+    return RequestOriginUtils.isLoopbackRequest(attributes.getRequest());
   }
 }

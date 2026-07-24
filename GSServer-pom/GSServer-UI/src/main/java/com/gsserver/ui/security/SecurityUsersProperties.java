@@ -9,8 +9,34 @@ public class SecurityUsersProperties {
 
   private final List<UserEntry> users = new ArrayList<>();
 
+  /** Path to the JSON file that persists runtime-managed users (seeded from {@link #users}). */
+  private String usersFile = "/WORKSPACE/Settings/GS-Server/users.json";
+
+  /**
+   * Master switch for passwordless {@code thor} superadmin login. Even when {@code true}, thor is
+   * only accepted for genuine localhost requests (see {@code RequestOriginUtils}); proxied public
+   * requests are always rejected. Set {@code false} to disable thor entirely.
+   */
+  private boolean thorLoginEnabled = true;
+
   public List<UserEntry> getUsers() {
     return users;
+  }
+
+  public String getUsersFile() {
+    return usersFile;
+  }
+
+  public void setUsersFile(String usersFile) {
+    this.usersFile = usersFile;
+  }
+
+  public boolean isThorLoginEnabled() {
+    return thorLoginEnabled;
+  }
+
+  public void setThorLoginEnabled(boolean thorLoginEnabled) {
+    this.thorLoginEnabled = thorLoginEnabled;
   }
 
   public static class UserEntry {

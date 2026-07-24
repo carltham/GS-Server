@@ -3,8 +3,6 @@ package com.gsserver.ui.proxy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,9 +21,9 @@ public class ProxyInstallationController {
     return ResponseEntity.ok(proxyInstallationService.getInstallGuide());
   }
 
-  @PostMapping("/terminal/execute")
+  @GetMapping("/site-file")
   @PreAuthorize("hasAnyAuthority('GROUP_HARDENING_OPERATORS','GROUP_HARDENING_ADMINS','GROUP_SUPERUSER')")
-  public ResponseEntity<TerminalCommandResponse> execute(@RequestBody TerminalCommandRequest request) {
-    return ResponseEntity.ok(proxyInstallationService.executeCommand(request));
+  public ResponseEntity<SiteFileResponse> siteFile() {
+    return ResponseEntity.ok(proxyInstallationService.getSiteFile());
   }
 }

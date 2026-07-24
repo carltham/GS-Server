@@ -8,16 +8,10 @@ export interface ProxyInstallGuideResponse {
   commands: string[];
 }
 
-export interface TerminalCommandRequest {
-  command: string;
-}
-
-export interface TerminalCommandResponse {
-  command: string;
-  exitCode: number;
-  stdout: string;
-  stderr: string;
-  durationMs: number;
+export interface SiteFileResponse {
+  path: string;
+  exists: boolean;
+  content: string;
 }
 
 @Injectable({
@@ -30,7 +24,7 @@ export class ProxyInstallationApiService {
     return this.http.get<ProxyInstallGuideResponse>('/api/v1/proxy/install/guide');
   }
 
-  executeCommand(request: TerminalCommandRequest): Observable<TerminalCommandResponse> {
-    return this.http.post<TerminalCommandResponse>('/api/v1/proxy/install/terminal/execute', request);
+  getSiteFile(): Observable<SiteFileResponse> {
+    return this.http.get<SiteFileResponse>('/api/v1/proxy/install/site-file');
   }
 }

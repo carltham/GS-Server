@@ -17,7 +17,8 @@ Last Updated: 2026-07-23
 
 ## Active Execution
 - Now: Phase 2 - Server Gateway Proxy Controller
-- Immediate Focus: bootstrap controller and service contract for nginx HTTPS proxy control
+- Immediate Focus: implement nginx command executor and integration tests
+- Completed: bootstrap controller and service contract for nginx HTTPS proxy control
 - Next: Phase 3 - Firewall Control
 
 ## Deferral Note

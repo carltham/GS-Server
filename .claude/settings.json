@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -v \"^\\\\`\\\\`\\\\`\")",
+      "Bash(grep -E \"\\\\.\\(java|ts\\)$\")",
+      "Bash(cp /mnt/DATA/Projects/0.present-projects/Active/GS-Server/GSServer-pom/GSServer-UI/src/main/java/com/gsserver/ui/db/*.java /mnt/DATA/Projects/0.present-projects/Active/GS-Server/GSServer-pom/GSServer-db/src/main/java/com/gsserver/db/)",
+      "Bash(mv /mnt/DATA/Projects/0.present-projects/Active/GS-Server/GSServer-pom/GSServer-UI/src/main/java/com/gsserver/ui/db/* /mnt/DATA/Projects/0.present-projects/Active/GS-Server/GSServer-pom/GSServer-jar/src/main/java/com/gsserver/jar/ 2>&1)",
+      "Bash(sed -i 's/package com.gsserver.ui.db;/package com.gsserver.jar;/' *.java)",
+      "Bash(sed -i 's/import com.gsserver.ui.hardening/import com.gsserver.ui.hardening/g' *.java)",
+      "Bash(sed -i 's/import com.gsserver.ui.proxy/import com.gsserver.ui.proxy/g' *.java)",
+      "Bash(sed -i 's/import com.gsserver.ui.gateway/import com.gsserver.ui.gateway/g' *.java)"
+    ],
+    "additionalDirectories": [
+      "/mnt/DATA/Projects/0.present-projects/Active/GS-Server/GSServer-pom/GSServer-UI/src/main/java/com/gsserver/ui/db"
+    ]
+  }
+}

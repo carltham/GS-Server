@@ -12,6 +12,8 @@
   <description>Parent aggregator for GS Server modules</description>
 
   <modules>
+    <module>GSServer-db</module>
+    <module>GSServer-jar</module>
     <module>GSServer-UI</module>
   </modules>
 </project>

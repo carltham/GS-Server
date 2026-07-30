@@ -20,7 +20,7 @@ cd /mnt/DATA/Projects/0.present-projects/Active/GS-Server/scripts/VM
 ./01-setup-network.sh
 
 # 3. Create base VM manually in virt-manager
-#    Storage: /mnt/STORAGE/VM_KVM/ubuntu-base.qcow2
+#    Storage: /mnt/STORAGE/VM_KVM/ubuntu-24.04.4.qcow2
 #    Then run:
 
 # 4. Clone base image to 4 VMs
@@ -79,7 +79,7 @@ Clone base VM image to 4 test VMs.
 ./02-clone-vms.sh
 ```
 
-**Requires:** ubuntu-base.qcow2 in /mnt/STORAGE/VM_KVM/
+**Requires:** ubuntu-24.04.4.qcow2 in /mnt/STORAGE/VM_KVM/
 
 ---
 
@@ -156,11 +156,11 @@ cleanup            # Delete all VMs
 
 1. Open virt-manager
 2. Create new VM
-3. Select ISO: `/home/user/Downloads/ubuntu-22.04.3-live-server-amd64.iso`
+3. Select ISO: `/home/user/Downloads/ubuntu-24.04.3-live-server-amd64.iso`
 4. Memory: 8192 MB, CPU: 4 cores
-5. Storage: 50 GB at `/mnt/STORAGE/VM_KVM/ubuntu-base.qcow2`
+5. Storage: 50 GB at `/mnt/STORAGE/VM_KVM/ubuntu-24.04.4.qcow2`
 6. Network: `gsserver-test`
-7. Install Ubuntu 22.04
+7. Install Ubuntu 24.04
 8. Enable OpenSSH during install
 9. After install, SSH in and run:
    ```bash
